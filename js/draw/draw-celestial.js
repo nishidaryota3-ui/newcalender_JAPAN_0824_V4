@@ -85,14 +85,16 @@ function drawLunarMansions(cycleStartTime) {
     if (concentricRings.length === 0) return;
 
     const st = getLayerStyle('lunarMansion');
-    const rBase = concentricRings[concentricRings.length - 1] + 60;
-    const rMax = rBase + 30;
+    const markScale = st.markScale !== undefined ? st.markScale : 1.8;
+    const bandWidth = st.bandWidth !== undefined ? st.bandWidth : Math.max(30, 24 + markScale * 8);
+    const rBase = concentricRings[concentricRings.length - 1] + 60 + (st.radiusOffset || 0);
+    const rMax = rBase + bandWidth;
     const resolution = 2;
     const totalHours = window.currentMonthDays * 24;
     const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
 
     const g = createSVGElem("g", { class: "layer-lunar-mansion-group" });
-    const bgRing = createSVGElem("circle", { cx: cx, cy: cy, r: (rBase + rMax)/2, fill: "none", stroke: st.bgRingColor || "#ffffff", "stroke-width": 30, opacity: (st.opacity * (st.bgRingOpacity || 0.05)) });
+    const bgRing = createSVGElem("circle", { cx: cx, cy: cy, r: (rBase + rMax)/2, fill: "none", stroke: st.bgRingColor || "#ffffff", "stroke-width": bandWidth, opacity: (st.opacity * (st.bgRingOpacity !== undefined ? st.bgRingOpacity : 0.05)) });
     g.appendChild(bgRing);
 
     let prevMansionIdx = -1;
@@ -117,15 +119,17 @@ function drawLunarMansions(cycleStartTime) {
             else if (prevMansionIdx >= 14 && prevMansionIdx <= 20) mansionColor = st.colorWest || "#888888";
             else if (prevMansionIdx >= 21 && prevMansionIdx <= 26) mansionColor = st.colorSouth || "#888888";
 
-            const ptText = polarToCartesian(cx, cy, rBase + 12, midAngle);
+            // 漢字（文字）は内周側へ配置
+            const ptText = polarToCartesian(cx, cy, rBase + 10, midAngle);
             const textEl = createSVGElem("text", {
                 x: ptText.x, y: ptText.y, fill: mansionColor, "font-size": `${st.fontSize || 9}px`, "font-family": st.fontFamily,
                 "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle + 180}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
             }, mansionData ? mansionData.name : "");
             g.appendChild(textEl);
 
-            const ptMark = polarToCartesian(cx, cy, rBase + 22, midAngle);
-            drawConstellationMark(g, prevMansionIdx, ptMark.x, ptMark.y, midAngle, mansionColor, st.opacity, st.starSize || 1.5);
+            // 星座図形（点と線）は外周側へ配置（漢字と重ならないように間隔を確保）
+            const ptMark = polarToCartesian(cx, cy, rBase + 16 + (markScale * 5), midAngle);
+            drawConstellationMark(g, prevMansionIdx, ptMark.x, ptMark.y, midAngle, mansionColor, st.opacity, st.starSize !== undefined ? st.starSize : 1.5, markScale);
 
             boundaryAngle = currentAngle;
         }
@@ -150,22 +154,23 @@ function drawLunarMansions(cycleStartTime) {
         else if (prevMansionIdx >= 14 && prevMansionIdx <= 20) mansionColor = st.colorWest || "#888888";
         else if (prevMansionIdx >= 21 && prevMansionIdx <= 26) mansionColor = st.colorSouth || "#888888";
 
-        const ptText = polarToCartesian(cx, cy, rBase + 12, midAngle);
+        const ptText = polarToCartesian(cx, cy, rBase + 10, midAngle);
         const textEl = createSVGElem("text", {
             x: ptText.x, y: ptText.y, fill: mansionColor, "font-size": `${st.fontSize || 9}px`, "font-family": st.fontFamily,
             "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle + 180}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
         }, mansionData ? mansionData.name : "");
         g.appendChild(textEl);
 
-        const ptMark = polarToCartesian(cx, cy, rBase + 22, midAngle);
-        drawConstellationMark(g, prevMansionIdx, ptMark.x, ptMark.y, midAngle, mansionColor, st.opacity, st.starSize || 1.5);
+        const ptMark = polarToCartesian(cx, cy, rBase + 16 + (markScale * 5), midAngle);
+        drawConstellationMark(g, prevMansionIdx, ptMark.x, ptMark.y, midAngle, mansionColor, st.opacity, st.starSize !== undefined ? st.starSize : 1.5, markScale);
     }
     layer.appendChild(g);
 }
 
-function drawConstellationMark(g, index, x, y, angle, color, opacity, starSize) {
+function drawConstellationMark(g, index, x, y, angle, color, opacity, starSize, markScale = 1.8) {
     const markG = createSVGElem("g", { transform: `translate(${x}, ${y}) rotate(${angle})`, opacity: opacity });
     const s = starSize;
+    const scale = markScale;
     let lines = [];
     const stars = [
         [{x: 0, y: -4}, {x: 0, y: 4}],
@@ -178,14 +183,14 @@ function drawConstellationMark(g, index, x, y, angle, color, opacity, starSize) 
     ][index % 7] || [{x: 0, y: 0}];
 
     for (let i = 0; i < stars.length - 1; i++) {
-        lines.push({x1: stars[i].x, y1: stars[i].y, x2: stars[i+1].x, y2: stars[i+1].y});
+        lines.push({x1: stars[i].x * scale, y1: stars[i].y * scale, x2: stars[i+1].x * scale, y2: stars[i+1].y * scale});
     }
 
     lines.forEach(l => {
-        markG.appendChild(createSVGElem("line", { x1: l.x1, y1: l.y1, x2: l.x2, y2: l.y2, stroke: color, "stroke-width": 0.4, opacity: 0.6 }));
+        markG.appendChild(createSVGElem("line", { x1: l.x1, y1: l.y1, x2: l.x2, y2: l.y2, stroke: color, "stroke-width": Math.max(0.4, 0.4 * Math.sqrt(scale)), opacity: 0.7 }));
     });
     stars.forEach(st => {
-        markG.appendChild(createSVGElem("circle", { cx: st.x, cy: st.y, r: s, fill: color }));
+        markG.appendChild(createSVGElem("circle", { cx: st.x * scale, cy: st.y * scale, r: s, fill: color }));
     });
     g.appendChild(markG);
 }

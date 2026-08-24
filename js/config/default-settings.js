@@ -17,7 +17,7 @@ window.defaultLayerSettings = {
     lunarMansion: {
         strokeWidth: 0.5, opacity: 0.5, fontFamily: "'Shippori Mincho', 'YuMincho', serif", fontSize: 9,
         colorEast: "#888888", colorSouth: "#888888", colorWest: "#888888", colorNorth: "#888888",
-        starSize: 1.5, bgRingColor: "#ffffff", bgRingOpacity: 0.05
+        starSize: 1.5, markScale: 1.8, radiusOffset: 0, bgRingColor: "#ffffff", bgRingOpacity: 0.05
     },
     tideGraph: { stroke: "#3b82f6", strokeWidth: 1.5, opacity: 1 },
     rainGraph: { stroke: "rgba(14, 165, 233, 0.8)", strokeWidth: 1.5, opacity: 1 },

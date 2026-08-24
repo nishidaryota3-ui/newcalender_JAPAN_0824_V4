@@ -72,7 +72,9 @@ function initDesignPanel() {
                 <label style="display:flex; justify-content:space-between; align-items:center;">西方白虎 (奎〜参): <input type="color" id="dp-color-west" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">南方朱雀 (井〜軫): <input type="color" id="dp-color-south" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
-                <label style="display:flex; justify-content:space-between; align-items:center;">星の大きさ: <input type="range" id="dp-mansion-star-size" min="0.1" max="5" step="0.1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-star-size-val" style="width:30px; text-align:right;">1.5</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">図形の大きさ (倍率): <input type="range" id="dp-mansion-mark-scale" min="0.5" max="4" step="0.1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-mark-scale-val" style="width:30px; text-align:right;">1.8</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">星の大きさ (点の半径): <input type="range" id="dp-mansion-star-size" min="0.1" max="5" step="0.1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-star-size-val" style="width:30px; text-align:right;">1.5</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">配置位置 (半径ズラし): <input type="range" id="dp-mansion-radius-offset" min="-200" max="200" step="1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-radius-offset-val" style="width:30px; text-align:right;">0</span></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-mansion-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-mansion-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-bg-opacity-val" style="width:30px; text-align:right;">0.05</span></label>
             </div>
@@ -190,7 +192,7 @@ function initDesignPanel() {
         }
     };
 
-    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-star-size', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
+    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (id === 'dp-lunar-phase') el.addEventListener('change', loadPanelData);
@@ -310,11 +312,22 @@ function loadPanelData() {
         document.getElementById('dp-group-mansion-colors').style.display = 'flex';
         ['East', 'South', 'West', 'North'].forEach(dir => document.getElementById(`dp-color-${dir.toLowerCase()}`).value = st[`color${dir}`] || "#888888");
         
-        document.getElementById('dp-mansion-star-size').value = st.starSize !== undefined ? st.starSize : 1.5;
-        document.getElementById('dp-mansion-star-size-val').innerText = st.starSize !== undefined ? st.starSize : 1.5;
+        const markScale = st.markScale !== undefined ? st.markScale : 1.8;
+        document.getElementById('dp-mansion-mark-scale').value = markScale;
+        document.getElementById('dp-mansion-mark-scale-val').innerText = markScale;
+
+        const starSize = st.starSize !== undefined ? st.starSize : 1.5;
+        document.getElementById('dp-mansion-star-size').value = starSize;
+        document.getElementById('dp-mansion-star-size-val').innerText = starSize;
+
+        const rOffset = st.radiusOffset !== undefined ? st.radiusOffset : 0;
+        document.getElementById('dp-mansion-radius-offset').value = rOffset;
+        document.getElementById('dp-mansion-radius-offset-val').innerText = rOffset;
+
         document.getElementById('dp-mansion-bg-color').value = st.bgRingColor || "#ffffff";
-        document.getElementById('dp-mansion-bg-opacity').value = st.bgRingOpacity !== undefined ? st.bgRingOpacity : 0.05;
-        document.getElementById('dp-mansion-bg-opacity-val').innerText = st.bgRingOpacity;
+        const bgOp = st.bgRingOpacity !== undefined ? st.bgRingOpacity : 0.05;
+        document.getElementById('dp-mansion-bg-opacity').value = bgOp;
+        document.getElementById('dp-mansion-bg-opacity-val').innerText = bgOp;
     }
 
     if (currentDesignTarget === 'canvasBg') {
@@ -402,8 +415,12 @@ function updateDesign() {
 
     if (currentDesignTarget === 'lunarMansion') {
         ['East', 'South', 'West', 'North'].forEach(dir => st[`color${dir}`] = document.getElementById(`dp-color-${dir.toLowerCase()}`).value);
+        st.markScale = parseFloat(document.getElementById('dp-mansion-mark-scale').value);
+        document.getElementById('dp-mansion-mark-scale-val').innerText = st.markScale;
         st.starSize = parseFloat(document.getElementById('dp-mansion-star-size').value);
         document.getElementById('dp-mansion-star-size-val').innerText = st.starSize;
+        st.radiusOffset = parseFloat(document.getElementById('dp-mansion-radius-offset').value);
+        document.getElementById('dp-mansion-radius-offset-val').innerText = st.radiusOffset;
         st.bgRingColor = document.getElementById('dp-mansion-bg-color').value;
         st.bgRingOpacity = parseFloat(document.getElementById('dp-mansion-bg-opacity').value);
         document.getElementById('dp-mansion-bg-opacity-val').innerText = st.bgRingOpacity;
