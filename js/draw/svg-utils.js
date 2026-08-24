@@ -158,11 +158,13 @@ function drawPinShape(g, shapeType, size, st) {
         shapeEl = createSVGElem("circle", { cx: 0, cy: 0, r: size });
     } else if (shapeType === "halfRight") {
         shapeEl = createSVGElem("g");
-        shapeEl.appendChild(createSVGElem("path", { d: `M 0,-${size} A ${size},${size} 0 0,1 0,${size} Z`, fill: fillCol, stroke: "none" }));
+        const pathFill = (fillCol !== "none" && fillCol !== "transparent") ? fillCol : strokeCol;
+        shapeEl.appendChild(createSVGElem("path", { d: `M 0,-${size} A ${size},${size} 0 0,1 0,${size} Z`, fill: pathFill, stroke: strokeCol, "stroke-width": strokeW }));
         shapeEl.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: size, fill: "none", stroke: strokeCol, "stroke-width": strokeW }));
     } else if (shapeType === "halfLeft") {
         shapeEl = createSVGElem("g");
-        shapeEl.appendChild(createSVGElem("path", { d: `M 0,-${size} A ${size},${size} 0 0,0 0,${size} Z`, fill: fillCol, stroke: "none" }));
+        const pathFill = (fillCol !== "none" && fillCol !== "transparent") ? fillCol : strokeCol;
+        shapeEl.appendChild(createSVGElem("path", { d: `M 0,-${size} A ${size},${size} 0 0,0 0,${size} Z`, fill: pathFill, stroke: strokeCol, "stroke-width": strokeW }));
         shapeEl.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: size, fill: "none", stroke: strokeCol, "stroke-width": strokeW }));
     } else if (shapeType === "rect") {
         shapeEl = createSVGElem("rect", { x: -size, y: -size, width: size*2, height: size*2, rx: size*0.2 });

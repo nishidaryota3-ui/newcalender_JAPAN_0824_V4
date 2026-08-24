@@ -200,32 +200,15 @@ function drawKoyomiEvents(startDate) {
             const lunarRadius = ((r30Out - r30In) * 0.4) * (pst.scale || 1);
 
             if (pst.shape !== "none") {
-                const shapeG = createSVGElem("g", { class: "layer-date-lunar", transform: `rotate(${baseAngle + 10.5}, ${ptLunar.x}, ${ptLunar.y})` });
-                let shapeEl = null;
-                if (pst.shape === "circle") shapeEl = createSVGElem("circle", { cx: ptLunar.x, cy: ptLunar.y, r: lunarRadius });
-                else if (pst.shape === "rect") {
-                    const size = lunarRadius * 1.8;
-                    shapeEl = createSVGElem("rect", { x: ptLunar.x - size/2, y: ptLunar.y - size/2, width: size, height: size, rx: 2 });
-                } else if (pst.shape === "triangle") {
-                    const p1 = polarToCartesian(ptLunar.x, ptLunar.y, lunarRadius*1.1, 0), p2 = polarToCartesian(ptLunar.x, ptLunar.y, lunarRadius*1.1, 120), p3 = polarToCartesian(ptLunar.x, ptLunar.y, lunarRadius*1.1, 240);
-                    shapeEl = createSVGElem("polygon", { points: `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}` });
-                } else if (pst.shape === "star") {
-                    let pts = "";
-                    for(let k=0; k<10; k++) {
-                        const p = polarToCartesian(ptLunar.x, ptLunar.y, k%2 === 0 ? lunarRadius*1.2 : lunarRadius*0.5, k * 36);
-                        pts += `${p.x},${p.y} `;
-                    }
-                    shapeEl = createSVGElem("polygon", { points: pts.trim() });
-                }
-
-                if (shapeEl) {
-                    shapeEl.setAttribute("fill", pst.bgFill);
-                    shapeEl.setAttribute("opacity", stL.opacity);
-                    const strokeW = pst.shapeStrokeWidth !== undefined ? pst.shapeStrokeWidth : 0;
-                    if (strokeW > 0) { shapeEl.setAttribute("stroke", pst.shapeStroke); shapeEl.setAttribute("stroke-width", strokeW); }
-                    shapeG.appendChild(shapeEl);
-                    lunarGroup.appendChild(shapeG);
-                }
+                const shapeG = createSVGElem("g", { class: "layer-date-lunar", transform: `translate(${ptLunar.x}, ${ptLunar.y}) rotate(${baseAngle + 10.5})` });
+                const drawSt = {
+                    fill: pst.bgFill,
+                    stroke: pst.shapeStroke,
+                    strokeWidth: pst.shapeStrokeWidth !== undefined ? pst.shapeStrokeWidth : 0,
+                    opacity: stL.opacity
+                };
+                drawPinShape(shapeG, pst.shape, lunarRadius, drawSt);
+                lunarGroup.appendChild(shapeG);
             }
 
             const lunarSt = { ...stL, fill: pst.fill, fontSize: lunarDay.length > 1 ? (stL.fontSize * 0.7) : stL.fontSize };
