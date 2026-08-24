@@ -661,6 +661,25 @@ function getRingInfo(distance) {
     return null;
 }
 
+function createTextArc(defs, id, r, angStart, angEnd) {
+    const p1 = polarToCartesian(cx, cy, r, angStart);
+    const p2 = polarToCartesian(cx, cy, r, angEnd);
+    if(defs) defs.appendChild(createSVGElem("path", { id: id, d: `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}` }));
+}
+
+function drawSingleTextOnPath(pathId, textContent, styleConfig, rVal, targetGroup) {
+    if (!textContent) return;
+    const textObj = createStyledText(styleConfig);
+    const textPath = createSVGElem("textPath", { href: `#${pathId}`, startOffset: "50%", "text-anchor": "middle" }, textContent);
+    const maxLen = 2 * Math.PI * rVal * (11 / 360);
+    if (textContent.length * parseFloat(styleConfig.fontSize) > maxLen * 0.9) {
+        textPath.setAttribute("textLength", maxLen * 0.9);
+        textPath.setAttribute("lengthAdjust", "spacingAndGlyphs");
+    }
+    textObj.appendChild(textPath);
+    targetGroup.appendChild(textObj);
+}
+
 function drawKoyomiEvents(startDate) {
     window.lastKoyomiStartDate = startDate;
     window.lastCycleStartTimeMs = startDate.getTime();
@@ -723,39 +742,23 @@ function drawKoyomiEvents(startDate) {
         const dbRow = koyomiDatabase[dateStr] || [];
         const baseAngle = ((currentStartSegment + i * SEGMENTS_PER_DAY) % TOTAL_SEGMENTS) * DEGREES_PER_SEGMENT;
 
-        const createArc = (id, r, angStart, angEnd) => {
-            const p1 = polarToCartesian(cx, cy, r, angStart);
-            const p2 = polarToCartesian(cx, cy, r, angEnd);
-            if(textPathDefs) textPathDefs.appendChild(createSVGElem("path", { id: id, d: `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}` }));
-        };
-
         const arcIdBase = `arc_${currentCycle}_${i}`;
         const angStart = baseAngle + 0.5, angEnd = baseAngle + 11.5;
 
-        createArc(`${arcIdBase}_24`, r24, angStart, angEnd); createArc(`${arcIdBase}_25`, r25, angStart, angEnd);
-        createArc(`${arcIdBase}_26`, r26, angStart, angEnd); createArc(`${arcIdBase}_27`, r27, angStart, angEnd);
-        createArc(`${arcIdBase}_28`, r28, angStart, angEnd); createArc(`${arcIdBase}_29`, r29, angStart, angEnd);
-        createArc(`${arcIdBase}_30U_text`, r30U_text + (stH.offsetRadius || 0), angStart, angEnd);
-        createArc(`${arcIdBase}_30M_text`, r30M_text + (stZ.offsetRadius || 0), angStart, angEnd);
-        createArc(`${arcIdBase}_30L_text`, r30L_text + (stI.offsetRadius || 0), angStart, angEnd);
-
-        const drawSingleText = (pathId, textContent, styleConfig, rVal, targetGroup) => {
-            if (!textContent) return;
-            const textObj = createStyledText(styleConfig);
-            const textPath = createSVGElem("textPath", { href: `#${pathId}`, startOffset: "50%", "text-anchor": "middle" }, textContent);
-            const maxLen = 2 * Math.PI * rVal * (11 / 360);
-            if (textContent.length * parseFloat(styleConfig.fontSize) > maxLen * 0.9) {
-                textPath.setAttribute("textLength", maxLen * 0.9);
-                textPath.setAttribute("lengthAdjust", "spacingAndGlyphs");
-            }
-            textObj.appendChild(textPath);
-            targetGroup.appendChild(textObj);
-        };
+        createTextArc(textPathDefs, `${arcIdBase}_24`, r24, angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_25`, r25, angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_26`, r26, angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_27`, r27, angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_28`, r28, angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_29`, r29, angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_30U_text`, r30U_text + (stH.offsetRadius || 0), angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_30M_text`, r30M_text + (stZ.offsetRadius || 0), angStart, angEnd);
+        createTextArc(textPathDefs, `${arcIdBase}_30L_text`, r30L_text + (stI.offsetRadius || 0), angStart, angEnd);
 
         const holidayText = [dbRow[8], dbRow[14]].filter(Boolean).join(' ／ ');
-        drawSingleText(`${arcIdBase}_30U_text`, holidayText, stH, r30U_text + (stH.offsetRadius || 0), holidayGroup);
-        drawSingleText(`${arcIdBase}_30M_text`, dbRow[7], stZ, r30M_text + (stZ.offsetRadius || 0), zassetsuGroup);
-        drawSingleText(`${arcIdBase}_30L_text`, dbRow[9], stI, r30L_text + (stI.offsetRadius || 0), importantGroup);
+        drawSingleTextOnPath(`${arcIdBase}_30U_text`, holidayText, stH, r30U_text + (stH.offsetRadius || 0), holidayGroup);
+        drawSingleTextOnPath(`${arcIdBase}_30M_text`, dbRow[7], stZ, r30M_text + (stZ.offsetRadius || 0), zassetsuGroup);
+        drawSingleTextOnPath(`${arcIdBase}_30L_text`, dbRow[9], stI, r30L_text + (stI.offsetRadius || 0), importantGroup);
 
         const dailyEvents = [];
         const pushEvents = (cellData, styleConfig) => {

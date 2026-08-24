@@ -373,8 +373,6 @@ async function initApp() {
     } catch(err) {
         console.error("SVG Init Error:", err);
     }
-    
-    if (typeof loader !== 'undefined') loader.style.display = 'none';
 }
 
 initApp();

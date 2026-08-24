@@ -52,11 +52,6 @@ window.checkAvailableTides = async function(year) {
 };
 
 function initUI() {
-    const layerPanelHeader = document.querySelector('#layer-panel h3');
-    if (layerPanelHeader) layerPanelHeader.style.textAlign = 'center';
-
-    const oldPalette = document.getElementById('palette');
-    if (oldPalette) oldPalette.remove();
     document.querySelectorAll('.panel-ui').forEach(el => el.remove());
 
     const navDiv = document.createElement('div');
