@@ -22,7 +22,6 @@ function drawAstronomicalPins(cycleStartTime) {
     if(!st || st.opacity === 0) return;
 
     const rMin = concentricRings[0] + (st.radiusOffset || 0);
-    const rMax = concentricRings[concentricRings.length - 1] + (st.radiusOffset || 0);
     const targets = [
         { diff: 0,   key: 'newMoon',      label: '新月 (0°)' },
         { diff: 90,  key: 'firstQuarter', label: '上弦 (90°)' },
@@ -55,20 +54,19 @@ function drawAstronomicalPins(cycleStartTime) {
                 const dateObj = new Date(exactTimeMs);
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
 
-                const pInner = polarToCartesian(cx, cy, rMin, angle);
-                const pOuter = polarToCartesian(cx, cy, rMax, angle);
-                const pst = st.phases ? st.phases[t.key] : null;
+                const pt = polarToCartesian(cx, cy, rMin, angle);
+                const g = createSVGElem("g", { class: "astronomical-pin", transform: `translate(${pt.x}, ${pt.y}) rotate(${angle})`, opacity: st.opacity });
 
-                const g = createSVGElem("g", { class: "astronomical-pin", opacity: st.opacity });
-                const line = createSVGElem("line", { x1: pInner.x, y1: pInner.y, x2: pOuter.x, y2: pOuter.y, stroke: pst && pst.shapeStroke ? pst.shapeStroke : "#d4af37", "stroke-width": 1, "stroke-dasharray": "2 2", opacity: 0.8 });
-                g.appendChild(line);
+                const pst = st.phases ? st.phases[t.key] : st;
+                const R = 3.5 * (pst.scale || 1);
+                const shapeType = pst.shape || "circle";
+                const drawSt = { 
+                    fill: pst.fill, 
+                    stroke: pst.shapeStroke !== undefined ? pst.shapeStroke : pst.stroke, 
+                    strokeWidth: pst.shapeStrokeWidth !== undefined ? pst.shapeStrokeWidth : pst.strokeWidth 
+                };
 
-                if (pst && pst.shape && pst.shape !== "none") {
-                    const pinG = createSVGElem("g", { transform: `translate(${pOuter.x}, ${pOuter.y}) rotate(${angle})` });
-                    drawPinShape(pinG, pst.shape, 5 * (pst.scale || 1), pst);
-                    g.appendChild(pinG);
-                }
-
+                drawPinShape(g, shapeType, R, drawSt);
                 g.appendChild(createSVGElem("title", {}, `${t.label}\n時刻: ${dateStr}\n角度: ${angle.toFixed(1)}°`));
                 layer.appendChild(g);
             }
