@@ -1,5 +1,47 @@
 // globals.js (全体のデータと状態の管理) - 最終完成版
 
+// ============================================================
+// 共通定数 (プロジェクト全体で使用)
+// ============================================================
+
+// --- 時間定数 ---
+const MS_PER_HOUR = 3_600_000;          // 1時間 = 3,600,000ミリ秒
+const MS_PER_DAY  = 86_400_000;         // 1日   = 86,400,000ミリ秒
+const MS_PER_HALF_DAY = 43_200_000;     // 12時間
+
+// --- 朔望月サイクル定数 ---
+const CYCLE_DAYS = 30;                  // 1サイクルの表示日数
+const TOTAL_SEGMENTS = 120;             // 1周 = 120セグメント (30日 × 4)
+const SEGMENTS_PER_DAY = 4;             // 1日 = 4セグメント (6時間ごと)
+const TOTAL_CYCLE_HOURS = 720;          // 1サイクル = 720時間 (30日 × 24)
+
+// --- 角度定数 ---
+const DEGREES_PER_SEGMENT = 3;          // 1セグメント = 3° (360° / 120)
+const DEGREES_PER_DAY = 12;             // 1日 = 12° (3° × 4セグメント)
+const DEGREES_PER_HOUR = 0.5;           // 1時間 = 0.5° (360° / 720時間)
+const RAD_TO_DEG = 180 / Math.PI;
+const DEG_TO_RAD = Math.PI / 180;
+
+// --- 同心円リングのインデックス定数 ---
+const RING_IDX_DATA_BAND_MIN = 16;      // 潮汐・降水グラフ帯の内側
+const RING_IDX_TIME_BAND_MIN = 19;      // 時間マーカー帯の内側
+const RING_IDX_TIME_BAND_MAX = 20;      // 時間マーカー帯の外側
+const RING_IDX_DATA_BAND_MAX = 22;      // 潮汐・降水グラフ帯の外側
+const RING_IDX_EVENT_TRACKS_START = 23; // イベントトラック開始 (階層24-29)
+const MIN_RINGS_TIME = 20;              // 時間レイヤー描画に必要な最小リング数
+const MIN_RINGS_DATA = 23;              // データレイヤー描画に必要な最小リング数
+const MIN_RINGS_FULL = 30;              // 全レイヤー描画に必要な最小リング数
+
+// --- LocalStorage キー ---
+const STORAGE_KEY_DATA     = 'polarCalendarDataV27';
+const STORAGE_KEY_SETTINGS = 'polarCalendarSettingsV5';
+const STORAGE_KEY_THEMES   = 'polarCalendarThemesV1';
+
+// --- 天文学定数 (ユリウス日・J2000.0) ---
+const JD_UNIX_EPOCH = 2440587.5;        // Unix epoch (1970-01-01) のユリウス日
+const J2000_EPOCH_JD = 2451545.0;       // J2000.0 のユリウス日
+const EARTH_OBLIQUITY_DEG = 23.4397;    // 地球の軸傾斜角 (度)
+
 const container = document.getElementById('container');
 const statusBar = document.getElementById('status-bar');
 
@@ -19,7 +61,7 @@ let interactionMode = 'pan';
 let activeBrush = "#38bdf8"; 
 let globalRotation = 0; 
 
-let calendarData = JSON.parse(localStorage.getItem('polarCalendarDataV27')) || {};
+let calendarData = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || {};
 let concentricRings = []; 
 
 // ▼ 雨（降水量）用の地名（検索ボックスの初期値） ▼
@@ -288,9 +330,9 @@ let highLowTidePoints = [];
 
 // ▼ 天文学計算用エンジン (SunCalc 完全数学的修正版) ▼
 const PI = Math.PI, rad = PI / 180.0, e = rad * 23.4397;
-function toJulian(date) { return date.valueOf() / 86400000 - 0.5 + 2440588; }
-function fromJulian(j) { return new Date((j + 0.5 - 2440588) * 86400000); }
-function toDays(date) { return toJulian(date) - 2451545; }
+function toJulian(date) { return date.valueOf() / MS_PER_DAY - 0.5 + 2440588; }
+function fromJulian(j) { return new Date((j + 0.5 - 2440588) * MS_PER_DAY); }
+function toDays(date) { return toJulian(date) - J2000_EPOCH_JD; }
 function rightAscension(l, b) { return Math.atan2(Math.sin(l) * Math.cos(e) - Math.tan(b) * Math.sin(e), Math.cos(l)); }
 function declination(l, b) { return Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l)); }
 function azimuth(H, phi, dec) { return Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)); }
@@ -324,7 +366,7 @@ function getTimes(date, lat, lng, height) {
     let val = (Math.sin(h0) - Math.sin(phi) * Math.sin(c.dec)) / (Math.cos(phi) * Math.cos(c.dec));
     if (val > 1) val = 1; if (val < -1) val = -1;
     const H = Math.acos(val);
-    const Jnoon = 2451545 + 0.0009 + lw / (2 * PI) + n; 
+    const Jnoon = J2000_EPOCH_JD + 0.0009 + lw / (2 * PI) + n; 
     const Jset = Jnoon + H / (2 * PI), Jrise = Jnoon - H / (2 * PI);
     return { sunrise: fromJulian(Jrise), sunset: fromJulian(Jset) };
 }
@@ -334,8 +376,8 @@ function getMoonTimes(date, lat, lng) {
     const hc = 0.133 * rad;
     let h0 = getMoonPosition(t, lat, lng).altitude - hc, h1, h2, rise, set, a, b, xe, ye, d, roots, x1, x2, dx;
     for (let i = 1; i <= 24; i += 2) {
-        h1 = getMoonPosition(new Date(t.valueOf() + i * 3600000), lat, lng).altitude - hc;
-        h2 = getMoonPosition(new Date(t.valueOf() + (i + 1) * 3600000), lat, lng).altitude - hc;
+        h1 = getMoonPosition(new Date(t.valueOf() + i * MS_PER_HOUR), lat, lng).altitude - hc;
+        h2 = getMoonPosition(new Date(t.valueOf() + (i + 1) * MS_PER_HOUR), lat, lng).altitude - hc;
         
         a = (h0 + h2) / 2 - h1; 
         b = (h2 - h0) / 2; 
@@ -370,8 +412,8 @@ function getMoonTimes(date, lat, lng) {
         h0 = h2;
     }
     const result = {};
-    if (rise) result.rise = new Date(t.valueOf() + rise * 3600000);
-    if (set) result.set = new Date(t.valueOf() + set * 3600000);
+    if (rise) result.rise = new Date(t.valueOf() + rise * MS_PER_HOUR);
+    if (set) result.set = new Date(t.valueOf() + set * MS_PER_HOUR);
     return result;
 }
 

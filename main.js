@@ -97,7 +97,7 @@ function formatDateStr(dateObj) {
 
 const standardizeDateKey = (rawStr) => rawStr.replace(/\//g, '-').split('-').map(p => p.length === 1 ? '0'+p : p).join('-');
 
-window.appSettings = JSON.parse(localStorage.getItem('polarCalendarSettingsV5')) || { global: JSON.parse(JSON.stringify(window.defaultLayerSettings)), months: {} };
+window.appSettings = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS)) || { global: JSON.parse(JSON.stringify(window.defaultLayerSettings)), months: {} };
 window.layerSettings = {}; 
 
 window.loadSettingsForCycle = function(cycleIdx) {
@@ -108,13 +108,13 @@ window.loadSettingsForCycle = function(cycleIdx) {
 
 window.saveLayerSettings = () => {
     window.appSettings.months[`cycle_${currentCycle}`] = JSON.parse(JSON.stringify(window.layerSettings));
-    localStorage.setItem('polarCalendarSettingsV5', JSON.stringify(window.appSettings));
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(window.appSettings));
 };
 
 window.applyGlobalSettings = () => {
     window.appSettings.global = JSON.parse(JSON.stringify(window.layerSettings));
     window.appSettings.months = {}; 
-    localStorage.setItem('polarCalendarSettingsV5', JSON.stringify(window.appSettings));
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(window.appSettings));
     alert("現在の色や設定を、すべての月の基本デザインとして適用しました！");
 };
 
@@ -125,7 +125,7 @@ const HAIKU_CSV_URL = 'https://docs.google.com/spreadsheets/d/1m0y8AOJNx1Ad4I44p
 async function fetchMeteoAndTideData(startDateMs) {
     const dStart = new Date(startDateMs);
     const targetYear = dStart.getFullYear(); 
-    apiRainData = new Array(720).fill(null);
+    apiRainData = new Array(TOTAL_CYCLE_HOURS).fill(null);
     localRainData = {}; 
     highLowTidePoints = []; 
     let tideDataFound = false;
@@ -144,7 +144,7 @@ async function fetchMeteoAndTideData(startDateMs) {
                     if (parts.length >= 3) {
                         const dateStr = standardizeDateKey(parts[0]);
                         const timeMs = new Date(`${dateStr}T${parts[1].trim()}:00+09:00`).getTime();
-                        if (timeMs >= startDateMs && timeMs <= startDateMs + 30 * 86400000) {
+                        if (timeMs >= startDateMs && timeMs <= startDateMs + CYCLE_DAYS * MS_PER_DAY) {
                             const tide = parseFloat(parts[2].trim());
                             if (!isNaN(timeMs) && !isNaN(tide)) highLowTidePoints.push({ time: timeMs, tide: tide });
                         }
@@ -178,8 +178,8 @@ async function fetchMeteoAndTideData(startDateMs) {
                         }
                     }
                 }
-                for(let h=0; h<720; h++) {
-                    const tMs = startDateMs + h * 3600000;
+                for(let h=0; h<TOTAL_CYCLE_HOURS; h++) {
+                    const tMs = startDateMs + h * MS_PER_HOUR;
                     apiRainData[h] = hourlyMap[tMs] !== undefined ? hourlyMap[tMs] : null;
                 }
                 rainDataFound = true;
@@ -237,11 +237,11 @@ function updateCalendarCycle() {
     window.loadSettingsForCycle(currentCycle);
     document.body.style.backgroundColor = window.layerSettings.canvasBg.fill;
 
-    const estimatedStartTimeMs = baseDate.getTime() + (currentCycle * synodicMonth) * 86400000;
+    const estimatedStartTimeMs = baseDate.getTime() + (currentCycle * synodicMonth) * MS_PER_DAY;
     let startDate = new Date(estimatedStartTimeMs);
 
     for (let offset = -3; offset <= 3; offset++) {
-        const checkDate = new Date(estimatedStartTimeMs + offset * 86400000);
+        const checkDate = new Date(estimatedStartTimeMs + offset * MS_PER_DAY);
         const dbRow = koyomiDatabase[formatDateStr(checkDate)];
         if (dbRow && dbRow[1] && dbRow[1].includes("月一日")) {
             startDate = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
@@ -250,9 +250,9 @@ function updateCalendarCycle() {
     }
 
     const cycleStartTimeMs = startDate.getTime();
-    currentStartSegment = Math.round(((cycleStartTimeMs - baseDate.getTime()) / 86400000 % 30) / 0.25) % 120;
-    if (currentStartSegment < 0) currentStartSegment += 120;
-    globalRotation = -currentStartSegment * 3;
+    currentStartSegment = Math.round(((cycleStartTimeMs - baseDate.getTime()) / MS_PER_DAY % CYCLE_DAYS) * SEGMENTS_PER_DAY) % TOTAL_SEGMENTS;
+    if (currentStartSegment < 0) currentStartSegment += TOTAL_SEGMENTS;
+    globalRotation = -currentStartSegment * DEGREES_PER_SEGMENT;
 
     const targetYear = startDate.getFullYear();
     const cycleDisplay = document.getElementById('cycleDisplay');

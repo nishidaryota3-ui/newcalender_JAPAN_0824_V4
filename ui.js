@@ -362,7 +362,7 @@ function initUI() {
             if(!name) return alert("保存するテーマ名を入力してください");
             if (!window.savedThemes) window.savedThemes = {};
             window.savedThemes[name] = JSON.parse(JSON.stringify(window.layerSettings));
-            localStorage.setItem('polarCalendarThemesV1', JSON.stringify(window.savedThemes));
+            localStorage.setItem(STORAGE_KEY_THEMES, JSON.stringify(window.savedThemes));
             updateThemeSelect();
             document.getElementById('theme-select').value = name;
             document.getElementById('theme-name-input').value = "";
@@ -655,7 +655,7 @@ function initUI() {
     
     document.getElementById('reset-all-settings').onclick = () => {
         if (confirm('⚠️ すべてのデザイン設定を完全に初期化しますか？\n（各月のデザイン設定もすべて消去されます）')) {
-            localStorage.removeItem('polarCalendarSettingsV5');
+            localStorage.removeItem(STORAGE_KEY_SETTINGS);
             window.appSettings = { global: JSON.parse(JSON.stringify(window.defaultLayerSettings)), months: {} };
             window.layerSettings = JSON.parse(JSON.stringify(window.defaultLayerSettings));
             window.saveLayerSettings();
@@ -949,7 +949,7 @@ function initUI() {
             for (const key in calendarData) {
                 if (key.startsWith(`c${currentCycle}_`) && calendarData[key].color === activeBrush) delete calendarData[key];
             }
-            localStorage.setItem('polarCalendarDataV27', JSON.stringify(calendarData));
+            localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(calendarData));
             if(typeof renderSavedData === 'function') renderSavedData();
         }
     };
@@ -1118,10 +1118,10 @@ function initInteractions() {
         const dx = ptM.x - cx, dy = ptM.y - cy;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        let angle = Math.atan2(dy, dx) * RAD_TO_DEG;
         angle = (angle + 90 + 360) % 360;
         
-        const absSegment = Math.floor(angle / 3);
+        const absSegment = Math.floor(angle / DEGREES_PER_SEGMENT);
         const ringInfo = typeof getRingInfo === 'function' ? getRingInfo(distance) : null;
 
         let sb = document.getElementById('status-bar');
@@ -1132,9 +1132,9 @@ function initInteractions() {
         }
 
         if (ringInfo) {
-            const relSegment = (absSegment - currentStartSegment + 120) % 120;
-            const day = Math.floor(relSegment / 4) + 1;
-            const timeSlot = relSegment % 4;
+            const relSegment = (absSegment - currentStartSegment + TOTAL_SEGMENTS) % TOTAL_SEGMENTS;
+            const day = Math.floor(relSegment / SEGMENTS_PER_DAY) + 1;
+            const timeSlot = relSegment % SEGMENTS_PER_DAY;
             const timeLabels = ["0:00〜6:00", "6:00〜12:00", "12:00〜18:00", "18:00〜24:00"];
             
             sb.innerText = `第 ${day} 日目 ｜ ${timeLabels[timeSlot]} ｜ ${ringInfo.name}`;
@@ -1161,7 +1161,7 @@ function initInteractions() {
             const cursorTarget = document.getElementById('container') || document.body;
             cursorTarget.style.cursor = interactionMode === 'pan' ? 'grab' : 'ew-resize';
         }
-        if (typeof calendarData !== 'undefined') localStorage.setItem('polarCalendarDataV27', JSON.stringify(calendarData));
+        if (typeof calendarData !== 'undefined') localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(calendarData));
     });
 
     if(typeof svg !== 'undefined' && svg) {
@@ -1174,10 +1174,10 @@ function initInteractions() {
             const ptM = pt.matrixTransform(masterGroup.getScreenCTM().inverse());
             const dx = ptM.x - cx, dy = ptM.y - cy;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            let angle = Math.atan2(dy, dx) * RAD_TO_DEG;
             angle = (angle + 90 + 360) % 360;
             
-            const absSegment = Math.floor(angle / 3);
+            const absSegment = Math.floor(angle / DEGREES_PER_SEGMENT);
             const ringInfo = typeof getRingInfo === 'function' ? getRingInfo(distance) : null;
             if (!ringInfo) return;
 
@@ -1188,7 +1188,7 @@ function initInteractions() {
                 calendarData[cellKey] = { color: activeBrush, absSegment: absSegment, rIn: ringInfo.rIn, rOut: ringInfo.rOut };
             }
             
-            localStorage.setItem('polarCalendarDataV27', JSON.stringify(calendarData));
+            localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(calendarData));
             if(typeof renderSavedData === 'function') renderSavedData();
         });
     }
