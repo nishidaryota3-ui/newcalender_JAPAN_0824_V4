@@ -200,7 +200,9 @@ function initNavBar() {
                 window.layerSettings = cloneDeep(window.savedThemes[name]);
             }
             window.saveLayerSettings();
-            location.reload();
+            updateCalendarCycle();
+            const dp = document.getElementById('design-panel');
+            if (dp) dp.style.display = 'none';
         };
     }
 
@@ -212,7 +214,10 @@ function initNavBar() {
                 window.appSettings = { global: cloneDeep(window.defaultLayerSettings), months: {} };
                 window.layerSettings = cloneDeep(window.defaultLayerSettings);
                 window.saveLayerSettings();
-                location.reload();
+                updateCalendarCycle();
+                const dp = document.getElementById('design-panel');
+                if (dp) dp.style.display = 'none';
+                alert('すべてのデザイン設定を初期状態に戻しました。');
             }
         };
     }
