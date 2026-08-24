@@ -101,8 +101,8 @@ window.appSettings = JSON.parse(localStorage.getItem('polarCalendarSettingsV5'))
 window.layerSettings = {}; 
 
 window.loadSettingsForCycle = function(cycleIdx) {
-    let base = mergeDeep(JSON.parse(JSON.stringify(window.defaultLayerSettings)), JSON.parse(JSON.stringify(window.appSettings.global)));
-    let monthData = window.appSettings.months[`cycle_${cycleIdx}`];
+    const base = mergeDeep(JSON.parse(JSON.stringify(window.defaultLayerSettings)), JSON.parse(JSON.stringify(window.appSettings.global)));
+    const monthData = window.appSettings.months[`cycle_${cycleIdx}`];
     window.layerSettings = monthData ? mergeDeep(base, monthData) : base;
 };
 
@@ -118,7 +118,7 @@ window.applyGlobalSettings = () => {
     alert("現在の色や設定を、すべての月の基本デザインとして適用しました！");
 };
 
-let koyomiDatabase = {};
+const koyomiDatabase = {};
 const KOYOMI_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqoX31YV0YAO3Mq4WatmLhjP7uUSF6dPMy3D2H3ktEFDFg1X1gJmoIXkul9JpS4aLgK9Ze3SSbV9BZ/pub?gid=0&single=true&output=csv';
 const HAIKU_CSV_URL = 'https://docs.google.com/spreadsheets/d/1m0y8AOJNx1Ad4I44poPheQAQNki1-QQIwi9wSw8jaBg/export?format=csv&gid=126185184';
 

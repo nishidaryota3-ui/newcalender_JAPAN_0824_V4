@@ -346,7 +346,7 @@ function initUI() {
         const select = document.getElementById('theme-select');
         if(!select) return;
         select.innerHTML = '<option value="default">デフォルト設定</option>';
-        for(let name in window.savedThemes) {
+        for(const name in window.savedThemes) {
             const opt = document.createElement('option');
             opt.value = name;
             opt.textContent = name;
@@ -1122,8 +1122,7 @@ function initInteractions() {
         angle = (angle + 90 + 360) % 360;
         
         const absSegment = Math.floor(angle / 3);
-        let ringInfo = null;
-        if (typeof getRingInfo === 'function') ringInfo = getRingInfo(distance);
+        const ringInfo = typeof getRingInfo === 'function' ? getRingInfo(distance) : null;
 
         let sb = document.getElementById('status-bar');
         if(!sb) {
@@ -1179,8 +1178,7 @@ function initInteractions() {
             angle = (angle + 90 + 360) % 360;
             
             const absSegment = Math.floor(angle / 3);
-            let ringInfo = null;
-            if(typeof getRingInfo === 'function') ringInfo = getRingInfo(distance);
+            const ringInfo = typeof getRingInfo === 'function' ? getRingInfo(distance) : null;
             if (!ringInfo) return;
 
             const cellKey = `c${currentCycle}_abs${absSegment}_${ringInfo.layerId}`;

@@ -298,41 +298,42 @@ function altitude(H, phi, dec) { return Math.asin(Math.sin(phi) * Math.sin(dec) 
 function siderealTime(d, lw) { return rad * (280.16 + 360.9856235 * d) - lw; }
 function solarMeanAnomaly(d) { return rad * (357.5291 + 0.98560028 * d); }
 function eclipticLongitude(M) {
-    var C = rad * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)), P = rad * 102.9372;
+    const C = rad * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)), P = rad * 102.9372;
     return M + C + P + PI;
 }
 function sunCoords(d) {
-    var M = solarMeanAnomaly(d), L = eclipticLongitude(M);
+    const M = solarMeanAnomaly(d), L = eclipticLongitude(M);
     return { dec: declination(L, 0), ra: rightAscension(L, 0) };
 }
 
 function moonCoords(d) {
-    var L = rad * (218.316 + 13.176396 * d);
-    var M = rad * (134.963 + 13.064993 * d);
-    var F = rad * (93.272 + 13.229350 * d);
-    var l = L + rad * 6.289 * Math.sin(M);
-    var b = rad * 5.128 * Math.sin(F);
-    var dt = 385001 - 20905 * Math.cos(M);
+    const L = rad * (218.316 + 13.176396 * d);
+    const M = rad * (134.963 + 13.064993 * d);
+    const F = rad * (93.272 + 13.229350 * d);
+    const l = L + rad * 6.289 * Math.sin(M);
+    const b = rad * 5.128 * Math.sin(F);
+    const dt = 385001 - 20905 * Math.cos(M);
     return { ra: rightAscension(l, b), dec: declination(l, b), dist: dt };
 }
 
 function getTimes(date, lat, lng, height) {
-    var lw = rad * -lng, phi = rad * lat, d = toDays(date);
-    var n = Math.round(d - 0.0009 - lw / (2 * PI));
-    var h0 = -0.0053 - 2.076 * Math.sqrt(height || 0) / 60;
-    var c = sunCoords(d + n);
-    var val = (Math.sin(h0) - Math.sin(phi) * Math.sin(c.dec)) / (Math.cos(phi) * Math.cos(c.dec));
+    const lw = rad * -lng, phi = rad * lat, d = toDays(date);
+    const n = Math.round(d - 0.0009 - lw / (2 * PI));
+    const h0 = -0.0053 - 2.076 * Math.sqrt(height || 0) / 60;
+    const c = sunCoords(d + n);
+    let val = (Math.sin(h0) - Math.sin(phi) * Math.sin(c.dec)) / (Math.cos(phi) * Math.cos(c.dec));
     if (val > 1) val = 1; if (val < -1) val = -1;
-    var H = Math.acos(val);
-    var Jnoon = 2451545 + 0.0009 + lw / (2 * PI) + n; 
-    var Jset = Jnoon + H / (2 * PI), Jrise = Jnoon - H / (2 * PI);
+    const H = Math.acos(val);
+    const Jnoon = 2451545 + 0.0009 + lw / (2 * PI) + n; 
+    const Jset = Jnoon + H / (2 * PI), Jrise = Jnoon - H / (2 * PI);
     return { sunrise: fromJulian(Jrise), sunset: fromJulian(Jset) };
 }
 
 function getMoonTimes(date, lat, lng) {
-    var t = new Date(date); t.setHours(0, 0, 0, 0);
-    var hc = 0.133 * rad, h0 = getMoonPosition(t, lat, lng).altitude - hc, h1, h2, rise, set, a, b, xe, ye, d, roots, x1, x2, dx;
-    for (var i = 1; i <= 24; i += 2) {
+    const t = new Date(date); t.setHours(0, 0, 0, 0);
+    const hc = 0.133 * rad;
+    let h0 = getMoonPosition(t, lat, lng).altitude - hc, h1, h2, rise, set, a, b, xe, ye, d, roots, x1, x2, dx;
+    for (let i = 1; i <= 24; i += 2) {
         h1 = getMoonPosition(new Date(t.valueOf() + i * 3600000), lat, lng).altitude - hc;
         h2 = getMoonPosition(new Date(t.valueOf() + (i + 1) * 3600000), lat, lng).altitude - hc;
         
@@ -368,15 +369,16 @@ function getMoonTimes(date, lat, lng) {
         if (rise && set) break; 
         h0 = h2;
     }
-    var result = {};
+    const result = {};
     if (rise) result.rise = new Date(t.valueOf() + rise * 3600000);
     if (set) result.set = new Date(t.valueOf() + set * 3600000);
     return result;
 }
 
 function getMoonPosition(date, lat, lng) {
-    var lw = rad * -lng, phi = rad * lat, d = toDays(date), c = moonCoords(d), H = siderealTime(d, lw) - c.ra;
-    var h = altitude(H, phi, c.dec), pa = Math.atan2(Math.sin(H), Math.tan(phi) * Math.cos(c.dec) - Math.sin(c.dec) * Math.cos(H));
+    const lw = rad * -lng, phi = rad * lat, d = toDays(date), c = moonCoords(d), H = siderealTime(d, lw) - c.ra;
+    let h = altitude(H, phi, c.dec);
+    const pa = Math.atan2(Math.sin(H), Math.tan(phi) * Math.cos(c.dec) - Math.sin(c.dec) * Math.cos(H));
     h = h + rad * 0.017 / Math.tan(h + rad * 10.26 / (h + rad * 5.10));
     return { azimuth: azimuth(H, phi, c.dec), altitude: h, distance: c.dist, parallacticAngle: pa };
 }

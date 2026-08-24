@@ -14,7 +14,7 @@ window.currentTideScaleMax = 100;
 
 if (typeof window.getTideRadius === 'undefined') {
     window.getTideRadius = function(tide, rMin, rMax) {
-        let ratio = (tide - window.currentTideScaleMin) / (window.currentTideScaleMax - window.currentTideScaleMin);
+        const ratio = (tide - window.currentTideScaleMin) / (window.currentTideScaleMax - window.currentTideScaleMin);
         return rMin + ratio * (rMax - rMin);
     };
 }
@@ -137,7 +137,7 @@ function drawAstronomicalPins(cycleStartTime) {
     
     for (let i = 0; i <= window.currentMonthDays * 24; i++) {
         const timeMs = cycleStartTime + i * 3600000;
-        let diff = (getLunarLongitude(timeMs) - getSolarLongitude(timeMs) + 360) % 360;
+        const diff = (getLunarLongitude(timeMs) - getSolarLongitude(timeMs) + 360) % 360;
         
         if (prevDiff !== null) {
             const targets = [
@@ -145,7 +145,7 @@ function drawAstronomicalPins(cycleStartTime) {
                 {val: 180, key: 'full'}, {val: 270, key: 'last'}
             ];
             
-            for(let t of targets) {
+            for(const t of targets) {
                 let cross = false;
                 let fraction = 0;
                 
@@ -260,7 +260,7 @@ function drawConstellationMark(startAng, endAng, index, rCenter, st, color) {
     const starCount = Math.floor(rand() * 3) + 3;
     const starBaseSize = st.starSize !== undefined ? st.starSize : 1.5;
 
-    let stars = []; // ← 欠落していた箱を復活！これでバグは解消されます
+    const stars = []; // ← 欠落していた箱を復活！これでバグは解消されます
     for(let i=0; i<starCount; i++) {
         const sAngle = midAngle + (rand() - 0.5) * 8;
         const pt = polarToCartesian(cx, cy, rCenter + (rand() - 0.5) * 15, sAngle);
@@ -298,7 +298,7 @@ function drawDailyRainStats(startDate) {
             const rain = localRainData[dateStr];
             const startAngle = (currentStartSegment + i * 4) * 3;
             const endAngle = startAngle + 12;
-            let computedOpacity = Math.min(rain / 150, 1) * (stBg.density || 0.35) + 0.05;
+            const computedOpacity = Math.min(rain / 150, 1) * (stBg.density || 0.35) + 0.05;
 
             const startIn = polarToCartesian(cx, cy, rMin, endAngle);
             const endIn = polarToCartesian(cx, cy, rMin, startAngle);
@@ -366,7 +366,7 @@ function drawTideGraph(cycleStartTimeMs) {
     }
 
     const startAngle = currentStartSegment * 3;
-    let points = [];
+    const points = [];
     
     displayData.forEach((pt) => {
         const diffMs = pt.time - cycleStartTimeMs;
@@ -555,7 +555,7 @@ function drawRainfallGraph(cycleStartTimeMs) {
     const graphStrokeW = stGraph.strokeWidth !== undefined ? stGraph.strokeWidth : 1.5;
     
     for (let h = 0; h < window.currentMonthDays * 24; h++) {
-        let rain = apiRainData[h];
+        const rain = apiRainData[h];
         if(rain === null || isNaN(rain) || rain <= 0) continue;
         const r = rMax - (rMax - rMin) * (rain / maxRain);
         const angle = startAngle + h * 0.5 + 0.25;
@@ -611,7 +611,7 @@ function drawLunarShadow(cycleStartTime) {
     let pathD = "";
     for (let i = 0; i <= totalHours * resolution; i++) {
         const timeMs = cycleStartTime + (i / resolution) * 3600000;
-        let diff = (getLunarLongitude(timeMs) - getSolarLongitude(timeMs) + 360) % 360;
+        const diff = (getLunarLongitude(timeMs) - getSolarLongitude(timeMs) + 360) % 360;
         const shadow = 1.0 - (0.5 * (1 - Math.cos(diff * Math.PI / 180)));
         const r = Math.sqrt(rMin * rMin + shadow * maxArea);
         const angle = startAngle + (i / resolution) * 0.5;
@@ -732,8 +732,8 @@ function drawKoyomiEvents(startDate) {
     const r30U_text = r30In + (r30Out - r30In) * 0.82, r30M_text = r30In + (r30Out - r30In) * 0.50, r30L_text = r30In + (r30Out - r30In) * 0.18; 
 
     let startWafu = "";
-    let startGregorianMonth = startDate.getMonth() + 1;
-    let endGregorianMonth = new Date(startDate.getTime() + (window.currentMonthDays - 1) * 86400000).getMonth() + 1;
+    const startGregorianMonth = startDate.getMonth() + 1;
+    const endGregorianMonth = new Date(startDate.getTime() + (window.currentMonthDays - 1) * 86400000).getMonth() + 1;
 
     const showShinto = document.getElementById("toggle-event-shinto") ? document.getElementById("toggle-event-shinto").checked : true;
     const showBuddhism = document.getElementById("toggle-event-buddhism") ? document.getElementById("toggle-event-buddhism").checked : true;
@@ -780,7 +780,7 @@ function drawKoyomiEvents(startDate) {
         drawSingleText(`${arcIdBase}_30M_text`, dbRow[7], stZ, r30M_text + (stZ.offsetRadius || 0), zassetsuGroup);
         drawSingleText(`${arcIdBase}_30L_text`, dbRow[9], stI, r30L_text + (stI.offsetRadius || 0), importantGroup);
 
-        let dailyEvents = [];
+        const dailyEvents = [];
         const pushEvents = (cellData, styleConfig) => {
             if (!cellData) return;
             cellData.split('・').forEach(item => { if (item.trim()) dailyEvents.push({ text: item.trim(), st: styleConfig }); });
@@ -790,7 +790,7 @@ function drawKoyomiEvents(startDate) {
         if (showChurch) pushEvents(dbRow[12], window.layerSettings.eventChurch || window.defaultLayerSettings.eventChurch);
         if (showSonota) pushEvents(dbRow[13], window.layerSettings.eventSonota || window.defaultLayerSettings.eventSonota);
 
-        let tracks = [[], [], [], [], [], []]; 
+        const tracks = [[], [], [], [], [], []]; 
         if (dailyEvents.length > 0) {
             if (dailyEvents.length <= 6) dailyEvents.forEach((ev, idx) => tracks[idx].push(ev));
             else {
@@ -809,7 +809,7 @@ function drawKoyomiEvents(startDate) {
 
             let combinedLen = 0;
             trackEvents.forEach((ev, eIdx) => {
-                let txt = (eIdx > 0 ? " \u00A0・\u00A0 " : "") + ev.text;
+                const txt = (eIdx > 0 ? " \u00A0・\u00A0 " : "") + ev.text;
                 textPath.appendChild(createSVGElem("tspan", getStyleAttrs(ev.st), txt));
                 combinedLen += txt.length * ev.st.fontSize;
             });
