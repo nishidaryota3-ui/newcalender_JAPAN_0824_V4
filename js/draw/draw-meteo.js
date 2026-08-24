@@ -91,21 +91,24 @@ function drawTideGraph(cycleStartTimeMs) {
 
     const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
 
-    const guideVals = [
-        window.currentTideScaleMin,
-        Math.round((window.currentTideScaleMin + window.currentTideScaleMax) / 2),
-        window.currentTideScaleMax
-    ];
+    const guideVals = [];
+    const numSteps = 4;
+    for (let s = 0; s <= numSteps; s++) {
+        guideVals.push(Math.round(window.currentTideScaleMin + s * (window.currentTideScaleMax - window.currentTideScaleMin) / numSteps));
+    }
+
+    const tideGuideAngles = [24, 84, 144, 204, 264, 324];
 
     guideVals.forEach(val => {
         const r = window.getTideRadius(val, rMin, rMax);
         const strokeW = stLine.strokeWidth !== undefined ? stLine.strokeWidth : 0.5;
         if(guideLayer) guideLayer.appendChild(createSVGElem("circle", { class: "layer-guide-tide-line", cx: cx, cy: cy, r: r, fill: "none", stroke: stLine.stroke, "stroke-width": strokeW, opacity: stLine.opacity }));
         
-        [{ relAngle: 48 }, { relAngle: 240 }].forEach(target => {
-            const labelAngle = startAngle + target.relAngle;
+        tideGuideAngles.forEach(relAngle => {
+            const labelAngle = startAngle + relAngle;
             const pt = polarToCartesian(cx, cy, r + (stText.offsetRadius || 0), labelAngle);
-            if(guideLayer) guideLayer.appendChild(createStyledText(stText, { class: "layer-guide-tide-text", x: pt.x, y: pt.y, "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${labelAngle + 180}, ${pt.x}, ${pt.y})` }, `${val}cm`));
+            // 中心側から読む向き（rotate(labelAngle)）で描画
+            if(guideLayer) guideLayer.appendChild(createStyledText(stText, { class: "layer-guide-tide-text", x: pt.x, y: pt.y, "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${labelAngle}, ${pt.x}, ${pt.y})` }, `${val}cm`));
         });
     });
 
