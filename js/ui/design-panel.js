@@ -136,9 +136,13 @@ function initDesignPanel() {
     document.body.appendChild(designPanel);
 
     const blockEvent = (e) => e.stopPropagation();
-    designPanel.addEventListener('mousedown', blockEvent);
+    designPanel.addEventListener('mousedown', (e) => {
+        // ヘッダー以外のパネル内部のクリックは背景に伝播させない
+        if (e.target.id !== 'dp-header' && !e.target.closest('#dp-header')) {
+            e.stopPropagation();
+        }
+    });
     designPanel.addEventListener('wheel', blockEvent);
-    designPanel.addEventListener('mousemove', blockEvent);
 
     let isDraggingPanel = false;
     let dpStartX = 0, dpStartY = 0;
@@ -154,18 +158,26 @@ function initDesignPanel() {
         designPanel.style.transform = 'none';
         designPanel.style.left = rect.left + 'px';
         designPanel.style.top = rect.top + 'px';
+        e.preventDefault();
+        e.stopPropagation();
     });
 
-    window.addEventListener('mousemove', (e) => {
+    document.addEventListener('mousemove', (e) => {
         if(isDraggingPanel) {
-            designPanel.style.left = (e.clientX - dpStartX) + 'px';
-            designPanel.style.top = (e.clientY - dpStartY) + 'px';
+            const newX = e.clientX - dpStartX;
+            const newY = e.clientY - dpStartY;
+            const maxX = Math.max(10, window.innerWidth - designPanel.offsetWidth - 10);
+            const maxY = Math.max(10, window.innerHeight - designPanel.offsetHeight - 10);
+            designPanel.style.left = Math.min(Math.max(10, newX), maxX) + 'px';
+            designPanel.style.top = Math.min(Math.max(10, newY), maxY) + 'px';
         }
     });
 
-    window.addEventListener('mouseup', () => {
-        isDraggingPanel = false;
-        if(dpHeader) dpHeader.style.cursor = 'grab';
+    document.addEventListener('mouseup', () => {
+        if(isDraggingPanel) {
+            isDraggingPanel = false;
+            if(dpHeader) dpHeader.style.cursor = 'grab';
+        }
     });
 
     document.getElementById('dp-close').onclick = () => { designPanel.style.display = 'none'; };
@@ -190,9 +202,15 @@ function initDesignPanel() {
         if (e.target.classList.contains('layer-settings-btn')) {
             currentDesignTarget = e.target.getAttribute('data-target');
             document.getElementById('dp-title').innerText = `${TARGET_NAMES[currentDesignTarget]} の設定`;
-            designPanel.style.transform = 'translate(-50%, -50%)';
-            designPanel.style.left = '50%';
-            designPanel.style.top = '50%';
+            
+            // 初回表示時のみ邪魔にならない位置に配置。一度動かしたらその位置を記憶してキープ
+            if (!designPanel.getAttribute('data-positioned')) {
+                designPanel.style.transform = 'none';
+                designPanel.style.left = Math.max(20, window.innerWidth - 650) + 'px';
+                designPanel.style.top = '100px';
+                designPanel.setAttribute('data-positioned', 'true');
+            }
+            
             loadPanelData();
             designPanel.style.display = 'block';
         }
