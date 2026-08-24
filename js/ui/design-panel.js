@@ -67,13 +67,17 @@ function initDesignPanel() {
                 </label>
             </div>
             <div id="dp-group-mansion-colors" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
+                <label style="display:flex; justify-content:space-between; align-items:center;">文字サイズ (フォント): <input type="number" id="dp-mansion-font-size" style="width:60px; background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px;" min="6" max="50" step="1" value="20"></label>
+                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
                 <label style="display:flex; justify-content:space-between; align-items:center;">東方青龍 (角〜箕): <input type="color" id="dp-color-east" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">北方玄武 (斗〜壁): <input type="color" id="dp-color-north" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">西方白虎 (奎〜参): <input type="color" id="dp-color-west" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">南方朱雀 (井〜軫): <input type="color" id="dp-color-south" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
-                <label style="display:flex; justify-content:space-between; align-items:center;">図形の大きさ (倍率): <input type="range" id="dp-mansion-mark-scale" min="0.5" max="4" step="0.1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-mark-scale-val" style="width:30px; text-align:right;">1.8</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">星の大きさ (点の半径): <input type="range" id="dp-mansion-star-size" min="0.1" max="5" step="0.1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-star-size-val" style="width:30px; text-align:right;">1.5</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">図形の大きさ (倍率): <input type="range" id="dp-mansion-mark-scale" min="2" max="16" step="0.5" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-mark-scale-val" style="width:30px; text-align:right;">4</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">星の大きさ (点の半径): <input type="range" id="dp-mansion-star-size" min="0.5" max="8" step="0.5" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-star-size-val" style="width:30px; text-align:right;">1.5</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">仕切り線の色: <input type="color" id="dp-mansion-divider-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">仕切り線の太さ: <input type="range" id="dp-mansion-divider-width" min="0" max="5" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-divider-width-val" style="width:30px; text-align:right;">1</span></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">配置位置 (半径ズラし): <input type="range" id="dp-mansion-radius-offset" min="-200" max="200" step="1" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-radius-offset-val" style="width:30px; text-align:right;">0</span></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-mansion-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-mansion-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-bg-opacity-val" style="width:30px; text-align:right;">0.05</span></label>
@@ -192,7 +196,7 @@ function initDesignPanel() {
         }
     };
 
-    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
+    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (id === 'dp-lunar-phase') el.addEventListener('change', loadPanelData);
@@ -312,13 +316,20 @@ function loadPanelData() {
         document.getElementById('dp-group-mansion-colors').style.display = 'flex';
         ['East', 'South', 'West', 'North'].forEach(dir => document.getElementById(`dp-color-${dir.toLowerCase()}`).value = st[`color${dir}`] || "#888888");
         
-        const markScale = st.markScale !== undefined ? st.markScale : 1.8;
+        document.getElementById('dp-mansion-font-size').value = st.fontSize !== undefined ? st.fontSize : 20;
+
+        const markScale = st.markScale !== undefined ? st.markScale : 4.0;
         document.getElementById('dp-mansion-mark-scale').value = markScale;
         document.getElementById('dp-mansion-mark-scale-val').innerText = markScale;
 
         const starSize = st.starSize !== undefined ? st.starSize : 1.5;
         document.getElementById('dp-mansion-star-size').value = starSize;
         document.getElementById('dp-mansion-star-size-val').innerText = starSize;
+
+        document.getElementById('dp-mansion-divider-color').value = st.dividerColor || "#777777";
+        const divW = st.strokeWidth !== undefined ? st.strokeWidth : 1.0;
+        document.getElementById('dp-mansion-divider-width').value = divW;
+        document.getElementById('dp-mansion-divider-width-val').innerText = divW;
 
         const rOffset = st.radiusOffset !== undefined ? st.radiusOffset : 0;
         document.getElementById('dp-mansion-radius-offset').value = rOffset;
@@ -415,10 +426,14 @@ function updateDesign() {
 
     if (currentDesignTarget === 'lunarMansion') {
         ['East', 'South', 'West', 'North'].forEach(dir => st[`color${dir}`] = document.getElementById(`dp-color-${dir.toLowerCase()}`).value);
+        st.fontSize = parseFloat(document.getElementById('dp-mansion-font-size').value) || 20;
         st.markScale = parseFloat(document.getElementById('dp-mansion-mark-scale').value);
         document.getElementById('dp-mansion-mark-scale-val').innerText = st.markScale;
         st.starSize = parseFloat(document.getElementById('dp-mansion-star-size').value);
         document.getElementById('dp-mansion-star-size-val').innerText = st.starSize;
+        st.dividerColor = document.getElementById('dp-mansion-divider-color').value;
+        st.strokeWidth = parseFloat(document.getElementById('dp-mansion-divider-width').value);
+        document.getElementById('dp-mansion-divider-width-val').innerText = st.strokeWidth;
         st.radiusOffset = parseFloat(document.getElementById('dp-mansion-radius-offset').value);
         document.getElementById('dp-mansion-radius-offset-val').innerText = st.radiusOffset;
         st.bgRingColor = document.getElementById('dp-mansion-bg-color').value;
