@@ -1,31 +1,43 @@
-// astronomy.js (高精度 天体計算アルゴリズム)
+// astronomy.js (高精度 天体計算アルゴリズム - Jean Meeus 準拠)
 
+/**
+ * UTCミリ秒時刻から J2000.0 からのユリウス世紀数を算出
+ * @param {number} timeMs - 1970-01-01 UTC からの経過ミリ秒
+ * @returns {number} ユリウス世紀数 (T)
+ */
 function getJulianCentury(timeMs) {
-    // timeMsは1970年1月1日からのミリ秒 (UTC)
-    // 2440587.5 は 1970年1月1日のユリウス日
-    const jd = (timeMs / 86400000.0) + 2440587.5;
-    // J2000.0 からのユリウス世紀数 (1世紀 = 36525日)
-    return (jd - 2451545.0) / 36525.0;
+    const jd = (timeMs / MS_PER_DAY) + JD_UNIX_EPOCH;
+    return (jd - J2000_EPOCH_JD) / 36525.0;
 }
 
+/**
+ * 指定日時の太陽の地心視黄経を計算 (Jean Meeus アルゴリズム)
+ * @param {number} timeMs - 1970-01-01 UTC からの経過ミリ秒
+ * @returns {number} 太陽黄経 (0° 〜 360°)
+ */
 function getSolarLongitude(timeMs) {
     const T = getJulianCentury(timeMs);
     const rad = Math.PI / 180.0;
     
     // 太陽の平均黄経
-    let L0 = 280.46646 + 36000.76983 * T;
+    const L0 = 280.46646 + 36000.76983 * T;
     // 太陽の平均近点角
-    let M = 357.52911 + 35999.05029 * T;
+    const M = 357.52911 + 35999.05029 * T;
     
     // 太陽の中心差（軌道の楕円性によるズレ）
-    let C = (1.914602 - 0.004817 * T) * Math.sin(M * rad)
-          + (0.019993 - 0.000101 * T) * Math.sin(2 * M * rad)
-          + 0.000289 * Math.sin(3 * M * rad);
+    const C = (1.914602 - 0.004817 * T) * Math.sin(M * rad)
+            + (0.019993 - 0.000101 * T) * Math.sin(2 * M * rad)
+            + 0.000289 * Math.sin(3 * M * rad);
           
-    let theta = L0 + C;
+    const theta = L0 + C;
     return (theta % 360.0 + 360.0) % 360.0;
 }
 
+/**
+ * 指定日時の月の地心視黄経を計算 (Jean Meeus 13項摂動補正版)
+ * @param {number} timeMs - 1970-01-01 UTC からの経過ミリ秒
+ * @returns {number} 月黄経 (0° 〜 360°)
+ */
 function getLunarLongitude(timeMs) {
     const T = getJulianCentury(timeMs);
     const rad = Math.PI / 180.0;
@@ -57,6 +69,6 @@ function getLunarLongitude(timeMs) {
     sigma_l -= 0.034720 * Math.sin(D * rad);
     sigma_l -= 0.030383 * Math.sin((M + M_prime) * rad);
     
-    let lambda = L_prime + sigma_l;
+    const lambda = L_prime + sigma_l;
     return (lambda % 360.0 + 360.0) % 360.0;
 }
