@@ -1,66 +1,9 @@
-// main.js (司令塔・初期化モジュール) - 完全修正版
+// main.js (司令塔・初期化 & サイクル制御オーケストレーター)
 
-window.defaultLayerSettings = {
-    canvasBg: { fill: "#f5f3eb" },
-    baseSvg: { stroke: "", strokeWidth: 0.5, opacity: 0.8 },
-    lunarShadow: { fill: "#000000", opacity: 0.03 },
-    astroPins: { 
-        opacity: 1, radiusOffset: 0,
-        phases: {
-            newMoon:      { shape: "circle", fill: "none", shapeStroke: "#000000", shapeStrokeWidth: 1.2, scale: 1 },
-            firstQuarter: { shape: "halfRight", fill: "none", shapeStroke: "#000000", shapeStrokeWidth: 1.2, scale: 1 },
-            fullMoon:     { shape: "circle", fill: "none", shapeStroke: "#000000", shapeStrokeWidth: 1.2, scale: 1 },
-            lastQuarter:  { shape: "halfLeft", fill: "none", shapeStroke: "#000000", shapeStrokeWidth: 1.2, scale: 1 }
-        }
-    },
-    dateLines: { stroke: "#555555", strokeWidth: 1.5, opacity: 1 },
-    lunarMansion: {
-        strokeWidth: 0.5, opacity: 0.5, fontFamily: "'Shippori Mincho', 'YuMincho', serif", fontSize: 9,
-        colorEast: "#888888", colorSouth: "#888888", colorWest: "#888888", colorNorth: "#888888",
-        starSize: 1.5, bgRingColor: "#ffffff", bgRingOpacity: 0.05
-    },
-    tideGraph: { stroke: "#3b82f6", strokeWidth: 1.5, opacity: 1 },
-    rainGraph: { stroke: "rgba(14, 165, 233, 0.8)", strokeWidth: 1.5, opacity: 1 },
-    dailyRainBg: { fill: "rgba(14, 165, 233, 1)", opacity: 1, density: 0.35 },
-    dailyRainText: { fontFamily: "'Arial', sans-serif", fontSize: 8, fill: "rgba(14, 165, 233, 1)", fontWeight: "bold", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    guideTime: { fontFamily: "'Shippori Mincho', 'YuMincho', 'Hiragino Mincho ProN', serif", fontSize: 7, fill: "#2c3e50", fontWeight: "bold", stroke: "rgba(255, 255, 255, 0.5)", strokeWidth: 3, opacity: 1, offsetRadius: 0 },
-    guideTideLine: { stroke: "rgba(114, 113, 113, 0.4)", strokeWidth: 0.5, opacity: 1 },
-    guideTideText: { fontFamily: "'Shippori Mincho', 'YuMincho', 'Hiragino Mincho ProN', serif", fontSize: 7, fill: "#3b82f6", fontWeight: "bold", stroke: "rgba(255, 255, 255, 0.5)", strokeWidth: 3, opacity: 1, offsetRadius: 0 },
-    guideRainLine: { stroke: "rgba(14, 165, 233, 0.3)", strokeWidth: 1, opacity: 1 },
-    guideRainText: { fontFamily: "'Shippori Mincho', 'YuMincho', 'Hiragino Mincho ProN', serif", fontSize: 7, fill: "rgba(14, 165, 233, 1)", fontWeight: "bold", stroke: "rgba(255, 255, 255, 0.5)", strokeWidth: 2.5, opacity: 1, offsetRadius: 0 },
-    gregorian: { fontFamily: "'Shippori Mincho', serif", fontSize: 9, fill: "#727171", fontWeight: "bold", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    weekday: { fontFamily: "'Shippori Mincho', serif", fontSize: 6, fill: "#b0b0b0", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0, lang: "en" },
-    sekki: { fontFamily: "'Shippori Mincho', serif", fontSize: 19, fill: "#2c3e50", fontWeight: "bold", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    kou: { fontFamily: "'Shippori Mincho', serif", fontSize: 14, fill: "#2c3e50", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    wafuText: { fontFamily: "'Shippori Mincho', serif", fontSize: 70, fill: "#d4af37", fontWeight: "bold", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    gregorianText: { fontFamily: "'Shippori Mincho', serif", fontSize: 40, fill: "#b0b0b0", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    holiday: { fontFamily: "'Shippori Mincho', serif", fontSize: 6.5, fill: "#d25b4e", fontWeight: "bold", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    zassetsu: { fontFamily: "'Shippori Mincho', serif", fontSize: 6, fill: "#727171", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    important: { fontFamily: "'Shippori Mincho', serif", fontSize: 6, fill: "#2c3e50", fontWeight: "bold", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    eventShinto: { fontFamily: "'Shippori Mincho', serif", fontSize: 6.5, fill: "#1e3a8a", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    eventBuddhism: { fontFamily: "'Shippori Mincho', serif", fontSize: 6.5, fill: "#3f3d56", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    eventChurch: { fontFamily: "'Shippori Mincho', serif", fontSize: 6.5, fill: "#6b5b4e", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    eventSonota: { fontFamily: "'Shippori Mincho', serif", fontSize: 6.5, fill: "#555555", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 0 },
-    haikuText: { fontFamily: "'Shippori Mincho', serif", fontSize: 8, fill: "#2c3e50", fontWeight: "normal", stroke: "#ffffff", strokeWidth: 0, opacity: 1, offsetRadius: 40 },
-    moonRisePin: { fill: "none", stroke: "#d4af37", strokeWidth: 1.2, opacity: 1, scale: 1.5, radiusOffset: 0, shape: "arrowUp" },
-    moonSetPin: { fill: "none", stroke: "#d4af37", strokeWidth: 1.2, opacity: 1, scale: 1.5, radiusOffset: 0, shape: "arrowDown" },
-    sunRisePin: { fill: "none", stroke: "#ff8888", strokeWidth: 1.2, opacity: 0.8, scale: 1.5, radiusOffset: 30, shape: "arrowUp" },
-    sunSetPin: { fill: "none", stroke: "#ff8888", strokeWidth: 1.2, opacity: 0.8, scale: 1.5, radiusOffset: 30, shape: "arrowDown" },
-    lunar: {
-        fontFamily: "'Shippori Mincho', serif", fontSize: 11, fontWeight: "normal", opacity: 1, offsetRadius: 0,
-        phases: {
-            normal:       { shape: "none", fill: "#2c3e50", bgFill: "transparent", shapeStroke: "#555555", shapeStrokeWidth: 0, scale: 1 },
-            newMoon:      { shape: "circle", fill: "#d4af37", bgFill: "transparent", shapeStroke: "#d4af37", shapeStrokeWidth: 1.2, scale: 1 },
-            firstQuarter: { shape: "none", fill: "#2c3e50", bgFill: "transparent", shapeStroke: "#555555", shapeStrokeWidth: 0, scale: 1 },
-            fullMoon:     { shape: "none", fill: "#2c3e50", bgFill: "transparent", shapeStroke: "#555555", shapeStrokeWidth: 0, scale: 1 },
-            lastQuarter:  { shape: "none", fill: "#2c3e50", bgFill: "transparent", shapeStroke: "#555555", shapeStrokeWidth: 0, scale: 1 }
-        }
-    }
-};
+function isObject(item) { 
+    return (item && typeof item === 'object' && !Array.isArray(item)); 
+}
 
-window.haikuDatabase = {}; 
-
-function isObject(item) { return (item && typeof item === 'object' && !Array.isArray(item)); }
 function mergeDeep(target, ...sources) {
     if (!sources.length) return target;
     const source = sources.shift();
@@ -74,28 +17,6 @@ function mergeDeep(target, ...sources) {
     }
     return mergeDeep(target, ...sources);
 }
-
-function parseCSVRow(str) {
-    const result = [];
-    let current = '', inQuotes = false;
-    for (let i = 0; i < str.length; i++) {
-        const c = str[i];
-        if (c === '"') {
-            if (inQuotes && str[i+1] === '"') { current += '"'; i++; }
-            else inQuotes = !inQuotes;
-        } else if (c === ',' && !inQuotes) { result.push(current); current = ''; } 
-        else current += c;
-    }
-    result.push(current);
-    return result.map(s => s.trim());
-}
-
-function formatDateStr(dateObj) {
-    const y = dateObj.getFullYear(), m = String(dateObj.getMonth() + 1).padStart(2, '0'), d = String(dateObj.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
-
-const standardizeDateKey = (rawStr) => rawStr.replace(/\//g, '-').split('-').map(p => p.length === 1 ? '0'+p : p).join('-');
 
 const cloneDeep = (obj) => JSON.parse(JSON.stringify(obj));
 const saveAppSettings = () => localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(window.appSettings));
@@ -121,113 +42,9 @@ window.applyGlobalSettings = () => {
     alert("現在の色や設定を、すべての月の基本デザインとして適用しました！");
 };
 
-const koyomiDatabase = {};
-const KOYOMI_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqoX31YV0YAO3Mq4WatmLhjP7uUSF6dPMy3D2H3ktEFDFg1X1gJmoIXkul9JpS4aLgK9Ze3SSbV9BZ/pub?gid=0&single=true&output=csv';
-const HAIKU_CSV_URL = 'https://docs.google.com/spreadsheets/d/1m0y8AOJNx1Ad4I44poPheQAQNki1-QQIwi9wSw8jaBg/export?format=csv&gid=126185184';
-
-async function fetchMeteoAndTideData(startDateMs) {
-    const dStart = new Date(startDateMs);
-    const targetYear = dStart.getFullYear(); 
-    apiRainData = new Array(TOTAL_CYCLE_HOURS).fill(null);
-    localRainData = {}; 
-    highLowTidePoints = []; 
-    let tideDataFound = false;
-    let rainDataFound = false;
-    const sb = document.getElementById('status-bar');
-    const station = TIDE_STATIONS[currentTideStationIndex];
-
-    const fetchTide = async () => {
-        try {
-            const res = await fetch(`tides/tide_${station.code}_${targetYear}.csv`);
-            if (res.ok) {
-                const txt = await res.text();
-                const lines = txt.split('\n');
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].split(',');
-                    if (parts.length >= 3) {
-                        const dateStr = standardizeDateKey(parts[0]);
-                        const timeMs = new Date(`${dateStr}T${parts[1].trim()}:00+09:00`).getTime();
-                        if (timeMs >= startDateMs && timeMs <= startDateMs + CYCLE_DAYS * MS_PER_DAY) {
-                            const tide = parseFloat(parts[2].trim());
-                            if (!isNaN(timeMs) && !isNaN(tide)) highLowTidePoints.push({ time: timeMs, tide: tide });
-                        }
-                    }
-                }
-                if (highLowTidePoints.length > 0) {
-                    highLowTidePoints.sort((a, b) => a.time - b.time);
-                    tideDataFound = true;
-                }
-            }
-        } catch(e) { console.warn("Tide fetch error", e); }
-    };
-
-    const fetchRain = async () => {
-        try {
-            const res = await fetch(`rain/rain_${currentLocationName}_${targetYear}.csv`);
-            if (res.ok) {
-                const txt = await res.text();
-                const lines = txt.split('\n');
-                const hourlyMap = {};
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].split(',');
-                    if (parts.length >= 3) {
-                        const dateStr = standardizeDateKey(parts[0]);
-                        const timeStr = parts[1].trim();
-                        const rain = parseFloat(parts[2].trim());
-                        if (!isNaN(rain)) {
-                            if (localRainData[dateStr] === undefined) localRainData[dateStr] = 0;
-                            localRainData[dateStr] += rain;
-                            hourlyMap[new Date(`${dateStr}T${timeStr}+09:00`).getTime()] = rain;
-                        }
-                    }
-                }
-                for(let h=0; h<TOTAL_CYCLE_HOURS; h++) {
-                    const tMs = startDateMs + h * MS_PER_HOUR;
-                    apiRainData[h] = hourlyMap[tMs] !== undefined ? hourlyMap[tMs] : null;
-                }
-                rainDataFound = true;
-            }
-        } catch(e) { console.warn("Rain fetch error", e); }
-    };
-
-    await Promise.all([fetchTide(), fetchRain()]);
-
-    if (sb) {
-        let msg = "";
-        if (!tideDataFound && !rainDataFound) msg = `⚠️ 潮汐 (${station.name}) と 雨 (${currentLocationName}) のCSVが見つかりません`;
-        else if (!tideDataFound) msg = `⚠️ 潮汐 (${station.name}) のCSVが見つかりません (tidesフォルダを確認)`;
-        else if (!rainDataFound) msg = `⚠️ 雨 (${currentLocationName}) のCSVが見つかりません (rainフォルダを確認)`;
-        else msg = `✅ ${station.name}の潮汐 ＋ ${currentLocationName}の雨 を描画しました`;
-        sb.innerText = msg;
-        sb.style.color = (tideDataFound && rainDataFound) ? "#38bdf8" : "#ff8888";
-    }
-}
-
-async function loadAllData() {
-    const fetchCSV = async (url) => {
-        try { const res = await fetch(url); return res.ok ? await res.text() : null; } catch(e) { return null; }
-    };
-    const [koyomiTxt, haikuTxt] = await Promise.all([fetchCSV(KOYOMI_CSV_URL), fetchCSV(HAIKU_CSV_URL)]);
-    if (koyomiTxt) {
-        const lines = koyomiTxt.split('\n');
-        for (let i = 1; i < lines.length; i++) {
-            const row = parseCSVRow(lines[i]);
-            if (row[0]) koyomiDatabase[standardizeDateKey(row[0])] = row;
-        }
-    }
-    if (haikuTxt) {
-        const lines = haikuTxt.split('\n');
-        for (let i = 1; i < lines.length; i++) {
-            const row = parseCSVRow(lines[i]);
-            if (row.length > 11 && row[1] === "西田上酢" && row[10] === "完成句" && row[11]) {
-                const dateKey = standardizeDateKey(row[11]);
-                if (!window.haikuDatabase[dateKey]) window.haikuDatabase[dateKey] = [];
-                window.haikuDatabase[dateKey].push(row[0]);
-            }
-        }
-    }
-}
-
+/**
+ * 各描画処理を安全に実行し、万一のエラーでも他の描画を止めない
+ */
 function safeExecute(taskName, fn) {
     try {
         if (typeof fn === 'function') fn();
@@ -236,6 +53,9 @@ function safeExecute(taskName, fn) {
     }
 }
 
+/**
+ * 選択されたサイクル(月)に応じてすべてのレイヤーを再計算・再描画
+ */
 function updateCalendarCycle() {
     window.loadSettingsForCycle(currentCycle);
     document.body.style.backgroundColor = window.layerSettings.canvasBg.fill;
@@ -313,6 +133,9 @@ function updateCalendarCycle() {
     });
 }
 
+/**
+ * アプリケーションの初期化
+ */
 async function initApp() {
     initUI();
     await loadAllData();

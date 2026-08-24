@@ -1,0 +1,322 @@
+// js/draw/draw-celestial.js (天体・月相・二十八宿・出没ピン・月の影 描画モジュール)
+
+if (typeof window.mansions === 'undefined') {
+    window.mansions = [
+        { name: "角" }, { name: "亢" }, { name: "氐" }, { name: "房" }, { name: "心" }, { name: "尾" }, { name: "箕" },
+        { name: "斗" }, { name: "女" }, { name: "虚" }, { name: "危" }, { name: "室" }, { name: "壁" },
+        { name: "奎" }, { name: "婁" }, { name: "胃" }, { name: "昴" }, { name: "畢" }, { name: "觜" }, { name: "参" },
+        { name: "井" }, { name: "鬼" }, { name: "柳" }, { name: "星" }, { name: "張" }, { name: "翼" }, { name: "軫" }
+    ];
+}
+
+/**
+ * 太陽・月の黄経差から主要月相（新月・上弦・満月・下弦）ピンを描画
+ */
+function drawAstronomicalPins(cycleStartTime) {
+    const layer = document.getElementById("layer-astronomical-pins");
+    if(!layer) return;
+    layer.innerHTML = "";
+    if (concentricRings.length < MIN_RINGS_FULL) return;
+
+    const st = getLayerStyle('astroPins');
+    if(!st || st.opacity === 0) return;
+
+    const rMin = concentricRings[0] + (st.radiusOffset || 0);
+    const rMax = concentricRings[concentricRings.length - 1] + (st.radiusOffset || 0);
+    const targets = [
+        { diff: 0,   key: 'newMoon',      label: '新月 (0°)' },
+        { diff: 90,  key: 'firstQuarter', label: '上弦 (90°)' },
+        { diff: 180, key: 'fullMoon',     label: '満月 (180°)' },
+        { diff: 270, key: 'lastQuarter',  label: '下弦 (270°)' }
+    ];
+
+    let prevDiff = (getLunarLongitude(cycleStartTime) - getSolarLongitude(cycleStartTime) + 360) % 360;
+    const totalHours = window.currentMonthDays * 24;
+    const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
+
+    for (let h = 1; h <= totalHours; h++) {
+        const timeMs = cycleStartTime + h * MS_PER_HOUR;
+        const diff = (getLunarLongitude(timeMs) - getSolarLongitude(timeMs) + 360) % 360;
+
+        for (const t of targets) {
+            let crossed = false;
+            let targetDiff = t.diff;
+            if (t.diff === 0) {
+                if (prevDiff > 350 && diff < 10) crossed = true;
+            } else {
+                if (prevDiff < targetDiff && diff >= targetDiff && (diff - prevDiff) < 20) crossed = true;
+            }
+
+            if (crossed) {
+                const fraction = t.diff === 0 ? (360 - prevDiff) / ((360 - prevDiff) + diff) : (targetDiff - prevDiff) / (diff - prevDiff);
+                const exactHour = (h - 1) + Math.max(0, Math.min(1, fraction));
+                const angle = startAngle + exactHour * DEGREES_PER_HOUR;
+                const exactTimeMs = cycleStartTime + exactHour * MS_PER_HOUR;
+                const dateObj = new Date(exactTimeMs);
+                const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+                const pInner = polarToCartesian(cx, cy, rMin, angle);
+                const pOuter = polarToCartesian(cx, cy, rMax, angle);
+                const pst = st.phases ? st.phases[t.key] : null;
+
+                const g = createSVGElem("g", { class: "astronomical-pin", opacity: st.opacity });
+                const line = createSVGElem("line", { x1: pInner.x, y1: pInner.y, x2: pOuter.x, y2: pOuter.y, stroke: pst && pst.shapeStroke ? pst.shapeStroke : "#d4af37", "stroke-width": 1, "stroke-dasharray": "2 2", opacity: 0.8 });
+                g.appendChild(line);
+
+                if (pst && pst.shape && pst.shape !== "none") {
+                    const pinG = createSVGElem("g", { transform: `translate(${pOuter.x}, ${pOuter.y}) rotate(${angle})` });
+                    drawPinShape(pinG, pst.shape, 5 * (pst.scale || 1), pst);
+                    g.appendChild(pinG);
+                }
+
+                g.appendChild(createSVGElem("title", {}, `${t.label}\n時刻: ${dateStr}\n角度: ${angle.toFixed(1)}°`));
+                layer.appendChild(g);
+            }
+        }
+        prevDiff = diff;
+    }
+}
+
+/**
+ * 二十七宿（月宿）の天文学的位置と星座マークを描画
+ */
+function drawLunarMansions(cycleStartTime) {
+    const layer = document.getElementById("layer-lunar-mansion");
+    if(!layer) return;
+    layer.innerHTML = "";
+    if (concentricRings.length === 0) return;
+
+    const st = getLayerStyle('lunarMansion');
+    const rBase = concentricRings[concentricRings.length - 1] + 60;
+    const rMax = rBase + 30;
+    const resolution = 2;
+    const totalHours = window.currentMonthDays * 24;
+    const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
+
+    const g = createSVGElem("g", { class: "layer-lunar-mansion-group" });
+    const bgRing = createSVGElem("circle", { cx: cx, cy: cy, r: (rBase + rMax)/2, fill: "none", stroke: st.bgRingColor || "#ffffff", "stroke-width": 30, opacity: (st.opacity * (st.bgRingOpacity || 0.05)) });
+    g.appendChild(bgRing);
+
+    let prevMansionIdx = -1;
+    let boundaryAngle = startAngle;
+
+    for (let i = 0; i <= totalHours * resolution; i++) {
+        const timeMs = cycleStartTime + (i / resolution) * MS_PER_HOUR;
+        const lambdaMoon = getLunarLongitude(timeMs);
+        const mansionIdx = Math.floor((lambdaMoon % 360) / (360 / 27));
+        const currentAngle = startAngle + (i / resolution) * DEGREES_PER_HOUR;
+
+        if (prevMansionIdx !== -1 && mansionIdx !== prevMansionIdx) {
+            const p1 = polarToCartesian(cx, cy, rBase, currentAngle);
+            const p2 = polarToCartesian(cx, cy, rMax, currentAngle);
+            g.appendChild(createSVGElem("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: "#ffffff", "stroke-width": st.strokeWidth || 0.5, opacity: st.opacity }));
+
+            const midAngle = (boundaryAngle + currentAngle) / 2;
+            const mansionData = window.mansions[prevMansionIdx];
+            
+            let mansionColor = st.colorEast || "#888888";
+            if (prevMansionIdx >= 7 && prevMansionIdx <= 13) mansionColor = st.colorNorth || "#888888";
+            else if (prevMansionIdx >= 14 && prevMansionIdx <= 20) mansionColor = st.colorWest || "#888888";
+            else if (prevMansionIdx >= 21 && prevMansionIdx <= 26) mansionColor = st.colorSouth || "#888888";
+
+            const ptText = polarToCartesian(cx, cy, rBase + 12, midAngle);
+            const textEl = createSVGElem("text", {
+                x: ptText.x, y: ptText.y, fill: mansionColor, "font-size": `${st.fontSize || 9}px`, "font-family": st.fontFamily,
+                "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle + 180}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
+            }, mansionData ? mansionData.name : "");
+            g.appendChild(textEl);
+
+            const ptMark = polarToCartesian(cx, cy, rBase + 22, midAngle);
+            drawConstellationMark(g, prevMansionIdx, ptMark.x, ptMark.y, midAngle, mansionColor, st.opacity, st.starSize || 1.5);
+
+            boundaryAngle = currentAngle;
+        }
+
+        if (i === 0) {
+            const p1 = polarToCartesian(cx, cy, rBase, currentAngle);
+            const p2 = polarToCartesian(cx, cy, rMax, currentAngle);
+            g.appendChild(createSVGElem("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: "#ffffff", "stroke-width": st.strokeWidth || 0.5, opacity: st.opacity }));
+            boundaryAngle = currentAngle;
+        }
+
+        prevMansionIdx = mansionIdx;
+    }
+
+    if (boundaryAngle < startAngle + totalHours * DEGREES_PER_HOUR) {
+        const finalAngle = startAngle + totalHours * DEGREES_PER_HOUR;
+        const midAngle = (boundaryAngle + finalAngle) / 2;
+        const mansionData = window.mansions[prevMansionIdx];
+        
+        let mansionColor = st.colorEast || "#888888";
+        if (prevMansionIdx >= 7 && prevMansionIdx <= 13) mansionColor = st.colorNorth || "#888888";
+        else if (prevMansionIdx >= 14 && prevMansionIdx <= 20) mansionColor = st.colorWest || "#888888";
+        else if (prevMansionIdx >= 21 && prevMansionIdx <= 26) mansionColor = st.colorSouth || "#888888";
+
+        const ptText = polarToCartesian(cx, cy, rBase + 12, midAngle);
+        const textEl = createSVGElem("text", {
+            x: ptText.x, y: ptText.y, fill: mansionColor, "font-size": `${st.fontSize || 9}px`, "font-family": st.fontFamily,
+            "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle + 180}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
+        }, mansionData ? mansionData.name : "");
+        g.appendChild(textEl);
+
+        const ptMark = polarToCartesian(cx, cy, rBase + 22, midAngle);
+        drawConstellationMark(g, prevMansionIdx, ptMark.x, ptMark.y, midAngle, mansionColor, st.opacity, st.starSize || 1.5);
+    }
+    layer.appendChild(g);
+}
+
+function drawConstellationMark(g, index, x, y, angle, color, opacity, starSize) {
+    const markG = createSVGElem("g", { transform: `translate(${x}, ${y}) rotate(${angle})`, opacity: opacity });
+    const s = starSize;
+    let lines = [];
+    const stars = [
+        [{x: 0, y: -4}, {x: 0, y: 4}],
+        [{x: -4, y: -4}, {x: -2, y: 0}, {x: 2, y: 2}, {x: 4, y: 4}],
+        [{x: -4, y: -3}, {x: 0, y: -4}, {x: 4, y: -2}, {x: 0, y: 3}],
+        [{x: -4, y: -4}, {x: -4, y: 4}, {x: 4, y: -4}, {x: 4, y: 4}],
+        [{x: 0, y: 0}, {x: -4, y: -3}, {x: 4, y: -3}],
+        [{x: -4, y: -4}, {x: -3, y: -1}, {x: -1, y: 2}, {x: 2, y: 4}, {x: 4, y: 3}, {x: 4, y: 1}],
+        [{x: -4, y: -3}, {x: 4, y: -3}, {x: -2, y: 3}, {x: 2, y: 3}]
+    ][index % 7] || [{x: 0, y: 0}];
+
+    for (let i = 0; i < stars.length - 1; i++) {
+        lines.push({x1: stars[i].x, y1: stars[i].y, x2: stars[i+1].x, y2: stars[i+1].y});
+    }
+
+    lines.forEach(l => {
+        markG.appendChild(createSVGElem("line", { x1: l.x1, y1: l.y1, x2: l.x2, y2: l.y2, stroke: color, "stroke-width": 0.4, opacity: 0.6 }));
+    });
+    stars.forEach(st => {
+        markG.appendChild(createSVGElem("circle", { cx: st.x, cy: st.y, r: s, fill: color }));
+    });
+    g.appendChild(markG);
+}
+
+/**
+ * 共通天体ピン（出没）の描画ヘルパー
+ */
+function drawCelestialPin(timeDate, isRise, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle) {
+    const st = isRise ? stRise : stSet;
+    const targetLayer = isRise ? riseLayer : setLayer;
+    if (!timeDate || !st || st.opacity === 0 || !targetLayer) return;
+
+    const timeMs = timeDate.getTime();
+    if (isNaN(timeMs)) return;
+    if (timeMs < cycleStartTimeMs || timeMs > cycleStartTimeMs + window.currentMonthDays * MS_PER_DAY) return;
+
+    const hours = (timeMs - cycleStartTimeMs) / MS_PER_HOUR;
+    const angle = startAngle + hours * DEGREES_PER_HOUR;
+    if (isNaN(angle)) return; 
+
+    const tideVal = getApproxTideAtTime(timeMs);
+    const r = window.getTideRadius(tideVal, rMin, rMax) + (st.radiusOffset || 0);
+    const pt = polarToCartesian(cx, cy, r, angle);
+    if (isNaN(pt.x) || isNaN(pt.y)) return; 
+
+    const size = 3 * (st.scale !== undefined ? st.scale : 1.5);
+    const g = createSVGElem("g", { transform: `translate(${pt.x}, ${pt.y}) rotate(${angle})`, opacity: st.opacity });
+    
+    drawPinShape(g, st.shape || (isRise ? "arrowUp" : "arrowDown"), size, st);
+    targetLayer.appendChild(g);
+}
+
+/**
+ * 月の出・月の入りピンを描画
+ */
+function drawMoonEventPins(cycleStartTimeMs) {
+    const riseLayer = document.getElementById("layer-moon-rise");
+    const setLayer = document.getElementById("layer-moon-set");
+    if(riseLayer) riseLayer.innerHTML = "";
+    if(setLayer) setLayer.innerHTML = "";
+    if (concentricRings.length < MIN_RINGS_DATA) return;
+    
+    const stRise = getLayerStyle('moonRisePin');
+    const stSet = getLayerStyle('moonSetPin');
+
+    const station = TIDE_STATIONS[currentTideStationIndex] || {lat: 35.68, lon: 139.76};
+    const rMin = concentricRings[RING_IDX_DATA_BAND_MIN], rMax = concentricRings[RING_IDX_DATA_BAND_MAX];
+    const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
+
+    for (let i = 0; i < window.currentMonthDays; i++) {
+        const dayDate = new Date(cycleStartTimeMs + i * MS_PER_DAY + MS_PER_HALF_DAY); 
+        const moonTimes = getMoonTimes(dayDate, station.lat, station.lon);
+
+        drawCelestialPin(moonTimes.rise, true, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
+        drawCelestialPin(moonTimes.set, false, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
+    }
+}
+
+/**
+ * 日の出・日の入りピンを描画（月相日のみ）
+ */
+function drawSunEventPins(startDate) {
+    const riseLayer = document.getElementById("layer-sun-rise");
+    const setLayer = document.getElementById("layer-sun-set");
+    if(riseLayer) riseLayer.innerHTML = "";
+    if(setLayer) setLayer.innerHTML = "";
+    if (concentricRings.length < MIN_RINGS_DATA) return;
+
+    const stRise = getLayerStyle('sunRisePin');
+    const stSet = getLayerStyle('sunSetPin');
+
+    const station = TIDE_STATIONS[currentTideStationIndex] || {lat: 35.68, lon: 139.76};
+    const cycleStartTimeMs = startDate.getTime();
+    const rMin = concentricRings[RING_IDX_DATA_BAND_MIN], rMax = concentricRings[RING_IDX_DATA_BAND_MAX];
+    const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
+
+    for (let i = 0; i < window.currentMonthDays; i++) {
+        const loopDate = new Date(startDate.getTime() + i * MS_PER_DAY);
+        const dateStr = formatDateStr(loopDate);
+        const dbRow = koyomiDatabase[dateStr] || [];
+        
+        let isPhaseDay = false;
+        if (dbRow[1]) {
+            const rawLunarDay = (dbRow[1].match(/旧暦.*?月(.+?)日/) || [])[1] || "";
+            if (["一", "八", "十五", "二十三"].includes(rawLunarDay)) isPhaseDay = true;
+        }
+        
+        if (isPhaseDay) {
+            const sunTimes = getTimes(new Date(loopDate.getTime() + MS_PER_HALF_DAY), station.lat, station.lon);
+
+            drawCelestialPin(sunTimes.sunrise, true, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
+            drawCelestialPin(sunTimes.sunset, false, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
+        }
+    }
+}
+
+/**
+ * 月の満ち欠け（影の幾何学グラデーション領域）を描画
+ */
+function drawLunarShadow(cycleStartTime) {
+    const shadowLayer = document.getElementById("layer-shadow");
+    if(shadowLayer) shadowLayer.innerHTML = "";
+    if (concentricRings.length < MIN_RINGS_FULL) return;
+
+    const st = getLayerStyle('lunarShadow'); 
+    const rMin = concentricRings[0];
+    const rMax = concentricRings[concentricRings.length - 2];
+    const maxArea = rMax * rMax - rMin * rMin;
+    const resolution = 2;
+    const totalHours = TOTAL_CYCLE_HOURS; 
+    const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
+
+    let pathD = "";
+    for (let i = 0; i <= totalHours * resolution; i++) {
+        const timeMs = cycleStartTime + (i / resolution) * MS_PER_HOUR;
+        const diff = (getLunarLongitude(timeMs) - getSolarLongitude(timeMs) + 360) % 360;
+        const shadow = 1.0 - (0.5 * (1 - Math.cos(diff * Math.PI / 180)));
+        const r = Math.sqrt(rMin * rMin + shadow * maxArea);
+        const angle = startAngle + (i / resolution) * DEGREES_PER_HOUR;
+        const pt = polarToCartesian(cx, cy, r, angle);
+
+        if (i === 0) pathD += `M ${pt.x},${pt.y} `;
+        else pathD += `L ${pt.x},${pt.y} `;
+    }
+
+    const endAngle = startAngle + (totalHours * DEGREES_PER_HOUR);
+    const pEndMin = polarToCartesian(cx, cy, rMin, endAngle);
+    const pStartMin = polarToCartesian(cx, cy, rMin, startAngle);
+    pathD += ` L ${pEndMin.x},${pEndMin.y} A ${rMin} ${rMin} 0 0 0 ${pStartMin.x} ${pStartMin.y} Z`;
+
+    if(shadowLayer) shadowLayer.appendChild(createSVGElem("path", { d: pathD, fill: st.fill, opacity: st.opacity }));
+}

@@ -100,10 +100,32 @@
 
     <div id="status-bar">空間を認識中...</div>
 
-    <script src="globals.js"></script>
-    <script src="astronomy.js"></script>
-    <script src="draw.js"></script>
-    <script src="ui.js"></script>
+    <!-- 設定・定数 -->
+    <script src="js/config/constants.js"></script>
+    <script src="js/config/tide-stations.js"></script>
+    <script src="js/config/default-settings.js"></script>
+
+    <!-- 天体計算 -->
+    <script src="js/astronomy/meeus.js"></script>
+    <script src="js/astronomy/ephemeris.js"></script>
+
+    <!-- 描画エンジン -->
+    <script src="js/draw/svg-utils.js"></script>
+    <script src="js/draw/draw-celestial.js"></script>
+    <script src="js/draw/draw-meteo.js"></script>
+    <script src="js/draw/draw-koyomi.js"></script>
+
+    <!-- UI・操作系 -->
+    <script src="js/ui/ui-constants.js"></script>
+    <script src="js/ui/haiku-modal.js"></script>
+    <script src="js/ui/export-service.js"></script>
+    <script src="js/ui/navbar.js"></script>
+    <script src="js/ui/design-panel.js"></script>
+    <script src="js/ui/toolbar.js"></script>
+    <script src="js/ui/interactions.js"></script>
+
+    <!-- データ通信・アプリ統括 -->
+    <script src="js/data-loader.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
