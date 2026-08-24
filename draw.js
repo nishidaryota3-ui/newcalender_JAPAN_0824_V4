@@ -128,7 +128,7 @@ function drawAstronomicalPins(cycleStartTime) {
     layer.innerHTML = "";
     if (concentricRings.length < MIN_RINGS_FULL) return;
 
-    const st = window.layerSettings.astroPins || window.defaultLayerSettings.astroPins;
+    const st = getLayerStyle('astroPins');
     if(!st || st.opacity === 0) return;
 
     const rMin = concentricRings[0] + (st.radiusOffset || 0);
@@ -191,7 +191,7 @@ function drawLunarMansions(cycleStartTimeMs) {
     if(layer) layer.innerHTML = "";
     if (concentricRings.length === 0) return;
 
-    const st = window.layerSettings.lunarMansion || window.defaultLayerSettings.lunarMansion;
+    const st = getLayerStyle('lunarMansion');
     const rBase = concentricRings[concentricRings.length - 1] + 60;
     const rMax = rBase + 30;
     const resolution = 2;
@@ -284,8 +284,8 @@ function drawDailyRainStats(startDate) {
     if(bgLayer) bgLayer.innerHTML = "";
     if(textLayer) textLayer.innerHTML = "";
 
-    const stBg = window.layerSettings.dailyRainBg || window.defaultLayerSettings.dailyRainBg;
-    const stText = window.layerSettings.dailyRainText || window.defaultLayerSettings.dailyRainText;
+    const stBg = getLayerStyle('dailyRainBg');
+    const stText = getLayerStyle('dailyRainText');
 
     const rMin = concentricRings[RING_IDX_DATA_BAND_MIN];
     const rMax = concentricRings[RING_IDX_DATA_BAND_MAX];
@@ -300,12 +300,7 @@ function drawDailyRainStats(startDate) {
             const endAngle = startAngle + DEGREES_PER_DAY;
             const computedOpacity = Math.min(rain / 150, 1) * (stBg.density || 0.35) + 0.05;
 
-            const startIn = polarToCartesian(cx, cy, rMin, endAngle);
-            const endIn = polarToCartesian(cx, cy, rMin, startAngle);
-            const startOut = polarToCartesian(cx, cy, rMax, endAngle);
-            const endOut = polarToCartesian(cx, cy, rMax, startAngle);
-
-            const d = ["M", startOut.x, startOut.y, "A", rMax, rMax, 0, 0, 0, endOut.x, endOut.y, "L", endIn.x, endIn.y, "A", rMin, rMin, 0, 0, 1, startIn.x, startIn.y, "Z"].join(" ");
+            const d = getSectorPathD(rMin, rMax, startAngle, endAngle);
             if(bgLayer) bgLayer.appendChild(createSVGElem("path", { d: d, fill: stBg.fill, opacity: computedOpacity }));
 
             const angleMid = startAngle + 6;
@@ -334,9 +329,9 @@ function drawTideGraph(cycleStartTimeMs) {
 
     if (!highLowTidePoints || highLowTidePoints.length === 0) return;
 
-    const stGraph = window.layerSettings.tideGraph || window.defaultLayerSettings.tideGraph;
-    const stLine = window.layerSettings.guideTideLine || window.layerSettings.guideTide || window.defaultLayerSettings.guideTideLine;
-    const stText = window.layerSettings.guideTideText || window.layerSettings.guideTide || window.defaultLayerSettings.guideTideText;
+    const stGraph = getLayerStyle('tideGraph');
+    const stLine = getLayerStyle('guideTideLine') || getLayerStyle('guideTide');
+    const stText = getLayerStyle('guideTideText') || getLayerStyle('guideTide');
 
     const rMin = concentricRings[RING_IDX_DATA_BAND_MIN];
     const rMax = concentricRings[RING_IDX_DATA_BAND_MAX];
@@ -420,6 +415,49 @@ function getApproxTideAtTime(targetTimeMs) {
     return p1.tide + (p2.tide - p1.tide) * ratio;
 }
 
+function getLayerStyle(layerKey) {
+    return (window.layerSettings && window.layerSettings[layerKey]) ||
+           (window.defaultLayerSettings && window.defaultLayerSettings[layerKey]) || {};
+}
+
+function getDayAngle(dayIndex) {
+    return ((currentStartSegment + dayIndex * SEGMENTS_PER_DAY) % TOTAL_SEGMENTS) * DEGREES_PER_SEGMENT;
+}
+
+function getSectorPathD(rIn, rOut, startAngle, endAngle) {
+    const startIn = polarToCartesian(cx, cy, rIn, endAngle);
+    const endIn = polarToCartesian(cx, cy, rIn, startAngle);
+    const startOut = polarToCartesian(cx, cy, rOut, endAngle);
+    const endOut = polarToCartesian(cx, cy, rOut, startAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    return ["M", startOut.x, startOut.y, "A", rOut, rOut, 0, largeArcFlag, 0, endOut.x, endOut.y, "L", endIn.x, endIn.y, "A", rIn, rIn, 0, largeArcFlag, 1, startIn.x, startIn.y, "Z"].join(" ");
+}
+
+function drawCelestialPin(timeDate, isRise, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle) {
+    const st = isRise ? stRise : stSet;
+    const targetLayer = isRise ? riseLayer : setLayer;
+    if (!timeDate || !st || st.opacity === 0 || !targetLayer) return;
+
+    const timeMs = timeDate.getTime();
+    if (isNaN(timeMs)) return;
+    if (timeMs < cycleStartTimeMs || timeMs > cycleStartTimeMs + window.currentMonthDays * MS_PER_DAY) return;
+
+    const hours = (timeMs - cycleStartTimeMs) / MS_PER_HOUR;
+    const angle = startAngle + hours * DEGREES_PER_HOUR;
+    if (isNaN(angle)) return; 
+
+    const tideVal = getApproxTideAtTime(timeMs);
+    const r = window.getTideRadius(tideVal, rMin, rMax) + (st.radiusOffset || 0);
+    const pt = polarToCartesian(cx, cy, r, angle);
+    if (isNaN(pt.x) || isNaN(pt.y)) return; 
+
+    const size = 3 * (st.scale !== undefined ? st.scale : 1.5);
+    const g = createSVGElem("g", { transform: `translate(${pt.x}, ${pt.y}) rotate(${angle})`, opacity: st.opacity });
+    
+    drawPinShape(g, st.shape || (isRise ? "arrowUp" : "arrowDown"), size, st);
+    targetLayer.appendChild(g);
+}
+
 function drawMoonEventPins(cycleStartTimeMs) {
     const riseLayer = document.getElementById("layer-moon-rise");
     const setLayer = document.getElementById("layer-moon-set");
@@ -427,8 +465,8 @@ function drawMoonEventPins(cycleStartTimeMs) {
     if(setLayer) setLayer.innerHTML = "";
     if (concentricRings.length < MIN_RINGS_DATA) return;
     
-    const stRise = window.layerSettings.moonRisePin || window.defaultLayerSettings.moonRisePin;
-    const stSet = window.layerSettings.moonSetPin || window.defaultLayerSettings.moonSetPin;
+    const stRise = getLayerStyle('moonRisePin');
+    const stSet = getLayerStyle('moonSetPin');
 
     const station = TIDE_STATIONS[currentTideStationIndex] || {lat: 35.68, lon: 139.76};
     const rMin = concentricRings[RING_IDX_DATA_BAND_MIN], rMax = concentricRings[RING_IDX_DATA_BAND_MAX];
@@ -438,35 +476,8 @@ function drawMoonEventPins(cycleStartTimeMs) {
         const dayDate = new Date(cycleStartTimeMs + i * MS_PER_DAY + MS_PER_HALF_DAY); 
         const moonTimes = getMoonTimes(dayDate, station.lat, station.lon);
 
-        const drawPin = (timeDate, isRise) => {
-            const st = isRise ? stRise : stSet;
-            const targetLayer = isRise ? riseLayer : setLayer;
-            if (!timeDate || !st || st.opacity === 0 || !targetLayer) return;
-
-            const timeMs = timeDate.getTime();
-            if (isNaN(timeMs)) return;
-            if (timeMs < cycleStartTimeMs || timeMs > cycleStartTimeMs + window.currentMonthDays * MS_PER_DAY) return;
-
-            const hours = (timeMs - cycleStartTimeMs) / MS_PER_HOUR;
-            const angle = startAngle + hours * DEGREES_PER_HOUR;
-            
-            if (isNaN(angle)) return; 
-
-            const tideVal = getApproxTideAtTime(timeMs);
-            const r = window.getTideRadius(tideVal, rMin, rMax) + (st.radiusOffset || 0);
-            const pt = polarToCartesian(cx, cy, r, angle);
-
-            if (isNaN(pt.x) || isNaN(pt.y)) return; 
-
-            const size = 3 * (st.scale !== undefined ? st.scale : 1.5);
-            const g = createSVGElem("g", { transform: `translate(${pt.x}, ${pt.y}) rotate(${angle})`, opacity: st.opacity });
-            
-            drawPinShape(g, st.shape || (isRise ? "arrowUp" : "arrowDown"), size, st);
-            targetLayer.appendChild(g);
-        };
-
-        drawPin(moonTimes.rise, true);
-        drawPin(moonTimes.set, false);
+        drawCelestialPin(moonTimes.rise, true, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
+        drawCelestialPin(moonTimes.set, false, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
     }
 }
 
@@ -477,8 +488,8 @@ function drawSunEventPins(startDate) {
     if(setLayer) setLayer.innerHTML = "";
     if (concentricRings.length < MIN_RINGS_DATA) return;
 
-    const stRise = window.layerSettings.sunRisePin || window.defaultLayerSettings.sunRisePin;
-    const stSet = window.layerSettings.sunSetPin || window.defaultLayerSettings.sunSetPin;
+    const stRise = getLayerStyle('sunRisePin');
+    const stSet = getLayerStyle('sunSetPin');
 
     const station = TIDE_STATIONS[currentTideStationIndex] || {lat: 35.68, lon: 139.76};
     const cycleStartTimeMs = startDate.getTime();
@@ -499,35 +510,8 @@ function drawSunEventPins(startDate) {
         if (isPhaseDay) {
             const sunTimes = getTimes(new Date(loopDate.getTime() + MS_PER_HALF_DAY), station.lat, station.lon);
 
-            const drawPin = (timeDate, isRise) => {
-                const st = isRise ? stRise : stSet;
-                const targetLayer = isRise ? riseLayer : setLayer;
-                if (!timeDate || !st || st.opacity === 0 || !targetLayer) return;
-
-                const timeMs = timeDate.getTime();
-                if (isNaN(timeMs)) return;
-                if (timeMs < cycleStartTimeMs || timeMs > cycleStartTimeMs + window.currentMonthDays * MS_PER_DAY) return;
-
-                const hours = (timeMs - cycleStartTimeMs) / MS_PER_HOUR;
-                const angle = startAngle + hours * DEGREES_PER_HOUR;
-                
-                if (isNaN(angle)) return; 
-
-                const tideVal = getApproxTideAtTime(timeMs);
-                const r = window.getTideRadius(tideVal, rMin, rMax) + (st.radiusOffset || 0);
-                const pt = polarToCartesian(cx, cy, r, angle);
-
-                if (isNaN(pt.x) || isNaN(pt.y)) return; 
-
-                const size = 3 * (st.scale !== undefined ? st.scale : 1.5);
-                const g = createSVGElem("g", { transform: `translate(${pt.x}, ${pt.y}) rotate(${angle})`, opacity: st.opacity });
-                
-                drawPinShape(g, st.shape || (isRise ? "arrowUp" : "arrowDown"), size, st);
-                targetLayer.appendChild(g);
-            };
-
-            drawPin(sunTimes.sunrise, true);
-            drawPin(sunTimes.sunset, false);
+            drawCelestialPin(sunTimes.sunrise, true, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
+            drawCelestialPin(sunTimes.sunset, false, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle);
         }
     }
 }
@@ -539,9 +523,9 @@ function drawRainfallGraph(cycleStartTimeMs) {
     if(guideLayer) guideLayer.innerHTML = "";
     if (concentricRings.length < MIN_RINGS_DATA) return;
 
-    const stGraph = window.layerSettings.rainGraph || window.defaultLayerSettings.rainGraph;
-    const stLine = window.layerSettings.guideRainLine || window.layerSettings.guideRain || window.defaultLayerSettings.guideRainLine;
-    const stText = window.layerSettings.guideRainText || window.layerSettings.guideRain || window.defaultLayerSettings.guideRainText;
+    const stGraph = getLayerStyle('rainGraph');
+    const stLine = getLayerStyle('guideRainLine') || getLayerStyle('guideRain');
+    const stText = getLayerStyle('guideRainText') || getLayerStyle('guideRain');
 
     const rMin = concentricRings[RING_IDX_DATA_BAND_MIN];
     const rMax = concentricRings[RING_IDX_DATA_BAND_MAX];
@@ -584,7 +568,7 @@ function drawTimeLabels() {
     const timeLayer = document.getElementById("layer-guide-time");
     if(timeLayer) timeLayer.innerHTML = "";
     if (concentricRings.length < MIN_RINGS_TIME) return;
-    const st = window.layerSettings.guideTime || window.defaultLayerSettings.guideTime;
+    const st = getLayerStyle('guideTime');
     const rMidTime = (concentricRings[RING_IDX_TIME_BAND_MIN] + concentricRings[RING_IDX_TIME_BAND_MAX]) / 2 + (st.offsetRadius || 0);
     const timeStr = ["0", "6", "12", "18"];
     
@@ -600,7 +584,7 @@ function drawLunarShadow(cycleStartTime) {
     if(shadowLayer) shadowLayer.innerHTML = "";
     if (concentricRings.length < MIN_RINGS_FULL) return;
 
-    const st = window.layerSettings.lunarShadow || window.defaultLayerSettings.lunarShadow; 
+    const st = getLayerStyle('lunarShadow'); 
     const rMin = concentricRings[0];
     const rMax = concentricRings[concentricRings.length - 2];
     const maxArea = rMax * rMax - rMin * rMin;
@@ -632,7 +616,7 @@ function drawLunarShadow(cycleStartTime) {
 function drawDynamicLines() {
     const linesLayer = document.getElementById("layer-lines");
     if(linesLayer) linesLayer.innerHTML = "";
-    const st = window.layerSettings.dateLines || window.defaultLayerSettings.dateLines;
+    const st = getLayerStyle('dateLines');
     const rMin = concentricRings[0];
     const rMax = concentricRings[concentricRings.length - 1];
 
@@ -662,14 +646,7 @@ function renderSavedData() {
 }
 
 function drawCell(rIn, rOut, startAngle, endAngle, color) {
-    const startIn = polarToCartesian(cx, cy, rIn, endAngle);
-    const endIn = polarToCartesian(cx, cy, rIn, startAngle);
-    const startOut = polarToCartesian(cx, cy, rOut, endAngle);
-    const endOut = polarToCartesian(cx, cy, rOut, startAngle);
-
-    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-    const d = ["M", startOut.x, startOut.y, "A", rOut, rOut, 0, largeArcFlag, 0, endOut.x, endOut.y, "L", endIn.x, endIn.y, "A", rIn, rIn, 0, largeArcFlag, 1, startIn.x, startIn.y, "Z"].join(" ");
-
+    const d = getSectorPathD(rIn, rOut, startAngle, endAngle);
     const dataLayer = document.getElementById("layer-data");
     if(dataLayer) dataLayer.appendChild(createSVGElem("path", { d: d, fill: color, opacity: "0.6" }));
 }
@@ -717,12 +694,12 @@ function drawKoyomiEvents(startDate) {
     const R = concentricRings;
     if(R.length < MIN_RINGS_FULL) return;
 
-    const stG = window.layerSettings.gregorian || window.defaultLayerSettings.gregorian;
-    const stW = window.layerSettings.weekday || window.defaultLayerSettings.weekday;
-    const stL = window.layerSettings.lunar || window.defaultLayerSettings.lunar;
-    const stZ = window.layerSettings.zassetsu || window.defaultLayerSettings.zassetsu;
-    const stH = window.layerSettings.holiday || window.defaultLayerSettings.holiday;
-    const stI = window.layerSettings.important || window.defaultLayerSettings.important;
+    const stG = getLayerStyle('gregorian');
+    const stW = getLayerStyle('weekday');
+    const stL = getLayerStyle('lunar');
+    const stZ = getLayerStyle('zassetsu');
+    const stH = getLayerStyle('holiday');
+    const stI = getLayerStyle('important');
 
     const daysStr = stW.lang === 'ja' ? ["日", "月", "火", "水", "木", "金", "土"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -785,18 +762,15 @@ function drawKoyomiEvents(startDate) {
             if (!cellData) return;
             cellData.split('・').forEach(item => { if (item.trim()) dailyEvents.push({ text: item.trim(), st: styleConfig }); });
         };
-        if (showShinto) pushEvents(dbRow[10], window.layerSettings.eventShinto || window.defaultLayerSettings.eventShinto);
-        if (showBuddhism) pushEvents(dbRow[11], window.layerSettings.eventBuddhism || window.defaultLayerSettings.eventBuddhism);
-        if (showChurch) pushEvents(dbRow[12], window.layerSettings.eventChurch || window.defaultLayerSettings.eventChurch);
-        if (showSonota) pushEvents(dbRow[13], window.layerSettings.eventSonota || window.defaultLayerSettings.eventSonota);
+        if (showShinto) pushEvents(dbRow[10], getLayerStyle('eventShinto'));
+        if (showBuddhism) pushEvents(dbRow[11], getLayerStyle('eventBuddhism'));
+        if (showChurch) pushEvents(dbRow[12], getLayerStyle('eventChurch'));
+        if (showSonota) pushEvents(dbRow[13], getLayerStyle('eventSonota'));
 
         const tracks = [[], [], [], [], [], []]; 
         if (dailyEvents.length > 0) {
-            if (dailyEvents.length <= 6) dailyEvents.forEach((ev, idx) => tracks[idx].push(ev));
-            else {
-                let currentTrack = 0;
-                dailyEvents.forEach((ev) => { tracks[currentTrack].push(ev); currentTrack = (currentTrack + 1) % 6; });
-            }
+            let currentTrack = 0;
+            dailyEvents.forEach((ev) => { tracks[currentTrack].push(ev); currentTrack = (currentTrack + 1) % 6; });
         }
 
         const availableR = [r29, r28, r27, r26, r25, r24];
@@ -838,7 +812,7 @@ function drawKoyomiEvents(startDate) {
             else if (rawLunarDay === "十五") phaseKey = "fullMoon";
             else if (rawLunarDay === "二十三") phaseKey = "lastQuarter";
 
-            const pst = stL.phases[phaseKey];
+            const pst = stL.phases ? stL.phases[phaseKey] : stL;
             const ptLunar = polarToCartesian(cx, cy, (r30In + r30Out)/2 + (stL.offsetRadius || 0), baseAngle + 10.5);
             const lunarRadius = ((r30Out - r30In) * 0.4) * (pst.scale || 1);
 
@@ -889,12 +863,12 @@ function drawKoyomiEvents(startDate) {
             if(outerSeasonLayer) outerSeasonLayer.appendChild(createStyledText(stOut, { class: classStr, x: ptTextOut.x, y: ptTextOut.y, "dominant-baseline": "middle", "text-anchor": "start", transform: `rotate(${lineAngle}, ${ptTextOut.x}, ${ptTextOut.y})` }, eventName));
         };
 
-        if (dbRow[2]) drawOuterText(dbRow[2], true, "layer-sekki", window.layerSettings.sekki || window.defaultLayerSettings.sekki, 0);
-        if (dbRow[3]) drawOuterText(dbRow[3], false, "layer-kou", window.layerSettings.kou || window.defaultLayerSettings.kou, dbRow[2] ? 1.5 : 0);
+        if (dbRow[2]) drawOuterText(dbRow[2], true, "layer-sekki", getLayerStyle('sekki'), 0);
+        if (dbRow[3]) drawOuterText(dbRow[3], false, "layer-kou", getLayerStyle('kou'), dbRow[2] ? 1.5 : 0);
     }
 
-    const stWafu = window.layerSettings.wafuText || window.defaultLayerSettings.wafuText;
-    const stGreText = window.layerSettings.gregorianText || window.defaultLayerSettings.gregorianText;
+    const stWafu = getLayerStyle('wafuText');
+    const stGreText = getLayerStyle('gregorianText');
     const wafuTextLayer = document.getElementById("layer-wafu-text");
     if(wafuTextLayer) {
         wafuTextLayer.innerHTML = "";
@@ -915,7 +889,7 @@ function drawHaikus(startDate) {
     if(layer) layer.innerHTML = "";
     if (concentricRings.length === 0) return;
 
-    const st = window.layerSettings.haikuText || window.defaultLayerSettings.haikuText;
+    const st = getLayerStyle('haikuText');
     if (!st || st.opacity === 0) return;
 
     const rBase = concentricRings[concentricRings.length - 1] + 90 + (st.offsetRadius || 0);

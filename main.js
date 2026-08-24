@@ -97,24 +97,27 @@ function formatDateStr(dateObj) {
 
 const standardizeDateKey = (rawStr) => rawStr.replace(/\//g, '-').split('-').map(p => p.length === 1 ? '0'+p : p).join('-');
 
-window.appSettings = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS)) || { global: JSON.parse(JSON.stringify(window.defaultLayerSettings)), months: {} };
+const cloneDeep = (obj) => JSON.parse(JSON.stringify(obj));
+const saveAppSettings = () => localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(window.appSettings));
+
+window.appSettings = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS)) || { global: cloneDeep(window.defaultLayerSettings), months: {} };
 window.layerSettings = {}; 
 
 window.loadSettingsForCycle = function(cycleIdx) {
-    const base = mergeDeep(JSON.parse(JSON.stringify(window.defaultLayerSettings)), JSON.parse(JSON.stringify(window.appSettings.global)));
+    const base = mergeDeep(cloneDeep(window.defaultLayerSettings), cloneDeep(window.appSettings.global));
     const monthData = window.appSettings.months[`cycle_${cycleIdx}`];
     window.layerSettings = monthData ? mergeDeep(base, monthData) : base;
 };
 
 window.saveLayerSettings = () => {
-    window.appSettings.months[`cycle_${currentCycle}`] = JSON.parse(JSON.stringify(window.layerSettings));
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(window.appSettings));
+    window.appSettings.months[`cycle_${currentCycle}`] = cloneDeep(window.layerSettings);
+    saveAppSettings();
 };
 
 window.applyGlobalSettings = () => {
-    window.appSettings.global = JSON.parse(JSON.stringify(window.layerSettings));
+    window.appSettings.global = cloneDeep(window.layerSettings);
     window.appSettings.months = {}; 
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(window.appSettings));
+    saveAppSettings();
     alert("現在の色や設定を、すべての月の基本デザインとして適用しました！");
 };
 
