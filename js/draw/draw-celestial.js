@@ -483,3 +483,130 @@ function drawLunarShadow(cycleStartTime) {
 
     if(shadowLayer) shadowLayer.appendChild(createSVGElem("path", { d: pathD, fill: st.fill, opacity: st.opacity }));
 }
+
+/**
+ * 天体時計の針（長針：月、短針：太陽、中心鋲）を描画
+ */
+function drawClockHands(cycleStartTime) {
+    const layer = document.getElementById("layer-clock-hands");
+    if (!layer) return;
+    layer.innerHTML = "";
+    if (concentricRings.length === 0) return;
+
+    const st = getLayerStyle('clockHands');
+    if (!st || st.opacity === 0) return;
+
+    const monthDays = window.currentMonthDays || 30;
+    const cycleDurationMs = monthDays * MS_PER_DAY;
+    const nowMs = Date.now();
+
+    let targetTimeMs;
+    let isStandby = false;
+
+    if (window.inspectedDateMs) {
+        targetTimeMs = window.inspectedDateMs;
+    } else if (nowMs >= cycleStartTime && nowMs <= cycleStartTime + cycleDurationMs) {
+        targetTimeMs = nowMs;
+    } else {
+        // 過去・未来の月は新月（0日目・12時位置）で待機
+        targetTimeMs = cycleStartTime;
+        isStandby = true;
+    }
+
+    const timeOffsetMs = targetTimeMs - cycleStartTime;
+    const hoursIntoMonth = Math.max(0, Math.min(monthDays * 24, timeOffsetMs / MS_PER_HOUR));
+    
+    // 月針の角度（30日の時間軸上の位置）
+    const moonAngle = currentStartSegment * DEGREES_PER_SEGMENT + hoursIntoMonth * DEGREES_PER_HOUR;
+    
+    // 太陽針の角度（太陽の季節・黄道移動）
+    const sunAngle = currentStartSegment * DEGREES_PER_SEGMENT + (hoursIntoMonth / 24) * 0.986 * (360 / 30);
+
+    const g = createSVGElem("g", { class: "clock-hands-group", opacity: st.opacity });
+
+    const sunLen = st.sunHandLength || 680;
+    const sunW = st.sunHandWidth !== undefined ? st.sunHandWidth : 2.2;
+    const sunCol = st.sunHandColor || "#c9743c";
+
+    const moonLen = st.moonHandLength || 960;
+    const moonW = st.moonHandWidth !== undefined ? st.moonHandWidth : 1.5;
+    const moonCol = st.moonHandColor || "#d4af37";
+
+    const pivotR = st.centerPivotRadius !== undefined ? st.centerPivotRadius : 12;
+    const pivotCol = st.centerPivotColor || "#8b8170";
+
+    // --- 1. 太陽針 (短針) ---
+    const sunG = createSVGElem("g", { class: "clock-hand-sun" });
+    const pSunTip = polarToCartesian(cx, cy, sunLen, sunAngle);
+    const pSunTail = polarToCartesian(cx, cy, 50, sunAngle + 180);
+
+    // 針の本体
+    sunG.appendChild(createSVGElem("line", {
+        x1: pSunTail.x, y1: pSunTail.y, x2: pSunTip.x, y2: pSunTip.y,
+        stroke: sunCol, "stroke-width": sunW, "stroke-linecap": "round"
+    }));
+
+    // 短針のカウンターウェイト（尾部ひし形）
+    const pSunTailMid = polarToCartesian(cx, cy, 35, sunAngle + 180);
+    sunG.appendChild(createSVGElem("circle", {
+        cx: pSunTailMid.x, cy: pSunTailMid.y, r: 4, fill: sunCol
+    }));
+
+    // 太陽シンボル (先端 ☉)
+    const sunHeadG = createSVGElem("g", { transform: `translate(${pSunTip.x}, ${pSunTip.y})` });
+    sunHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 10, fill: "rgba(201, 116, 60, 0.2)", stroke: sunCol, "stroke-width": 1.5 }));
+    sunHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 3, fill: sunCol }));
+    // 太陽光線（4本の小さなクロス）
+    for (let a = 0; a < 360; a += 45) {
+        const rad = a * Math.PI / 180;
+        const x1 = Math.cos(rad) * 11, y1 = Math.sin(rad) * 11;
+        const x2 = Math.cos(rad) * 15, y2 = Math.sin(rad) * 15;
+        sunHeadG.appendChild(createSVGElem("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: sunCol, "stroke-width": 1.2 }));
+    }
+    sunG.appendChild(sunHeadG);
+    g.appendChild(sunG);
+
+    // --- 2. 月針 (長針) ---
+    const moonG = createSVGElem("g", { class: "clock-hand-moon" });
+    const pMoonTip = polarToCartesian(cx, cy, moonLen, moonAngle);
+    const pMoonTail = polarToCartesian(cx, cy, 70, moonAngle + 180);
+
+    // 針の本体
+    moonG.appendChild(createSVGElem("line", {
+        x1: pMoonTail.x, y1: pMoonTail.y, x2: pMoonTip.x, y2: pMoonTip.y,
+        stroke: moonCol, "stroke-width": moonW, "stroke-linecap": "round"
+    }));
+
+    // 長針のカウンターウェイト（尾部三日月）
+    const pMoonTailMid = polarToCartesian(cx, cy, 45, moonAngle + 180);
+    moonG.appendChild(createSVGElem("circle", {
+        cx: pMoonTailMid.x, cy: pMoonTailMid.y, r: 5, fill: "none", stroke: moonCol, "stroke-width": 1.5
+    }));
+
+    // 月シンボル (先端 ☽)
+    const moonHeadG = createSVGElem("g", { transform: `translate(${pMoonTip.x}, ${pMoonTip.y}) rotate(${moonAngle})` });
+    moonHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 12, fill: "rgba(212, 175, 55, 0.2)", stroke: moonCol, "stroke-width": 1.5 }));
+    
+    // 三日月のアウトライン
+    const moonPathD = "M -4 -7 A 8 8 0 0 1 4 7 A 6 6 0 0 0 -4 -7 Z";
+    moonHeadG.appendChild(createSVGElem("path", { d: moonPathD, fill: moonCol }));
+    moonG.appendChild(moonHeadG);
+    g.appendChild(moonG);
+
+    // --- 3. 中心軸 (ピボット・金鋲) ---
+    const pivotG = createSVGElem("g", { class: "clock-pivot", style: "cursor: pointer;" });
+    pivotG.appendChild(createSVGElem("circle", { cx: cx, cy: cy, r: pivotR, fill: "#222222", stroke: pivotCol, "stroke-width": 2 }));
+    pivotG.appendChild(createSVGElem("circle", { cx: cx, cy: cy, r: pivotR * 0.65, fill: "none", stroke: moonCol, "stroke-width": 1.2 }));
+    pivotG.appendChild(createSVGElem("circle", { cx: cx, cy: cy, r: pivotR * 0.35, fill: sunCol }));
+    
+    // クリックで現在時刻に復帰
+    pivotG.onclick = (e) => {
+        e.stopPropagation();
+        window.inspectedDateMs = null;
+        drawClockHands(cycleStartTime);
+        if (statusBar) statusBar.innerText = "時計の針を現在日時にリセットしました";
+    };
+    g.appendChild(pivotG);
+
+    layer.appendChild(g);
+}

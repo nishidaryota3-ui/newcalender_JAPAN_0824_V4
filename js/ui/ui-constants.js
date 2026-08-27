@@ -17,6 +17,7 @@ const TARGET_NAMES = {
     canvasBg: "キャンバス背景", 
     baseSvg: "ベース図形", 
     lunarShadow: "月相シャドウ", 
+    clockHands: "天体時計の針", 
     astroPins: "天文学的ピン (朔望)", 
     dateLines: "日付区切り線 (30等分)", 
     lunarMansion: "二十七宿", 
@@ -54,6 +55,7 @@ const TARGET_NAMES = {
 const LAYER_VISIBILITY_MAP = {
     "toggle-base-svg": "#bg-group", 
     "toggle-lunar-shadow": "#layer-shadow", 
+    "toggle-clock-hands": "#layer-clock-hands", 
     "toggle-astro-pins": "#layer-astronomical-pins",
     "toggle-layer-lunar": "#layer-lunar-mansion", 
     "toggle-layer-zodiac": "#layer-zodiac-ring", 

@@ -97,6 +97,7 @@ function updateCalendarCycle() {
     safeExecute('drawTimeLabels', () => drawTimeLabels());
     safeExecute('drawKoyomiEvents', () => drawKoyomiEvents(startDate));
     safeExecute('drawHaikus', () => drawHaikus(startDate));
+    safeExecute('drawClockHands', () => drawClockHands(cycleStartTimeMs));
 
     safeExecute('applyMasterTransform', () => {
         if (masterGroup) masterGroup.setAttribute('transform', `rotate(${globalRotation}, ${cx}, ${cy})`);
@@ -184,7 +185,7 @@ async function initApp() {
         defs.setAttribute("id", "text-path-defs");
         masterGroup.appendChild(defs);
         
-        const layerIds = ["layer-shadow", "layer-astronomical-pins", "layer-lines", "layer-data", "layer-tide-wave", "layer-rain-graph", "layer-daily-rain-bg", "layer-lunar-mansion", "layer-zodiac-ring", "layer-solar-dates", "layer-outer-season", "layer-guide-tide", "layer-guide-rain", "layer-daily-rain-text", "layer-guide-time", "layer-wafu-text", "layer-haiku", "layer-moon-rise", "layer-moon-set", "layer-sun-rise", "layer-sun-set"];
+        const layerIds = ["layer-shadow", "layer-astronomical-pins", "layer-lines", "layer-data", "layer-tide-wave", "layer-rain-graph", "layer-daily-rain-bg", "layer-lunar-mansion", "layer-zodiac-ring", "layer-solar-dates", "layer-outer-season", "layer-guide-tide", "layer-guide-rain", "layer-daily-rain-text", "layer-guide-time", "layer-wafu-text", "layer-haiku", "layer-moon-rise", "layer-moon-set", "layer-sun-rise", "layer-sun-set", "layer-clock-hands"];
         layerIds.forEach(id => {
             const g = document.createElementNS(svgNS, "g");
             g.setAttribute("id", id);

@@ -99,6 +99,23 @@ function initDesignPanel() {
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-zodiac-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-zodiac-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-bg-opacity-val" style="width:30px; text-align:right;">0.03</span></label>
             </div>
+            <div id="dp-group-clock-hands" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
+                <div style="font-size:11px; color:#d4af37; font-weight:bold;">🌙 月の針 (長針)</div>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の色: <input type="color" id="dp-clock-moon-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の太さ: <input type="range" id="dp-clock-moon-width" min="0.5" max="6" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-moon-width-val" style="width:30px; text-align:right;">1.5</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の長さ: <input type="range" id="dp-clock-moon-length" min="400" max="1100" step="10" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-moon-length-val" style="width:30px; text-align:right;">960</span></label>
+                
+                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
+                <div style="font-size:11px; color:#c9743c; font-weight:bold;">☀️ 太陽の針 (短針)</div>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の色: <input type="color" id="dp-clock-sun-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の太さ: <input type="range" id="dp-clock-sun-width" min="0.5" max="6" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-width-val" style="width:30px; text-align:right;">2.2</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の長さ: <input type="range" id="dp-clock-sun-length" min="300" max="900" step="10" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-length-val" style="width:30px; text-align:right;">680</span></label>
+                
+                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
+                <div style="font-size:11px; color:#8b8170; font-weight:bold;">⚙️ 中心軸 (ピボット鋲)</div>
+                <label style="display:flex; justify-content:space-between; align-items:center;">鋲の大きさ: <input type="range" id="dp-clock-pivot-radius" min="4" max="25" step="1" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-pivot-radius-val" style="width:30px; text-align:right;">12</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">鋲の色: <input type="color" id="dp-clock-pivot-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+            </div>
             <div id="dp-group-shape" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
                 <label id="dp-row-shape-type" style="display:flex; justify-content:space-between; align-items:center;">図形の形: 
                     <select id="dp-shape" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:120px;">
@@ -213,7 +230,7 @@ function initDesignPanel() {
         }
     };
 
-    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-zodiac-display-type', 'dp-zodiac-font-size', 'dp-zodiac-color', 'dp-zodiac-divider-color', 'dp-zodiac-divider-width', 'dp-zodiac-radius-offset', 'dp-zodiac-bg-color', 'dp-zodiac-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
+    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-zodiac-display-type', 'dp-zodiac-font-size', 'dp-zodiac-color', 'dp-zodiac-divider-color', 'dp-zodiac-divider-width', 'dp-zodiac-radius-offset', 'dp-zodiac-bg-color', 'dp-zodiac-bg-opacity', 'dp-clock-moon-color', 'dp-clock-moon-width', 'dp-clock-moon-length', 'dp-clock-sun-color', 'dp-clock-sun-width', 'dp-clock-sun-length', 'dp-clock-pivot-radius', 'dp-clock-pivot-color', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (id === 'dp-lunar-phase') el.addEventListener('change', loadPanelData);
@@ -376,6 +393,30 @@ function loadPanelData() {
         document.getElementById('dp-zodiac-bg-opacity-val').innerText = bgOp;
     }
 
+    if (currentDesignTarget === 'clockHands') {
+        document.getElementById('dp-group-clock-hands').style.display = 'flex';
+        document.getElementById('dp-clock-moon-color').value = st.moonHandColor || "#d4af37";
+        const mW = st.moonHandWidth !== undefined ? st.moonHandWidth : 1.5;
+        document.getElementById('dp-clock-moon-width').value = mW;
+        document.getElementById('dp-clock-moon-width-val').innerText = mW;
+        const mL = st.moonHandLength !== undefined ? st.moonHandLength : 960;
+        document.getElementById('dp-clock-moon-length').value = mL;
+        document.getElementById('dp-clock-moon-length-val').innerText = mL;
+
+        document.getElementById('dp-clock-sun-color').value = st.sunHandColor || "#c9743c";
+        const sW = st.sunHandWidth !== undefined ? st.sunHandWidth : 2.2;
+        document.getElementById('dp-clock-sun-width').value = sW;
+        document.getElementById('dp-clock-sun-width-val').innerText = sW;
+        const sL = st.sunHandLength !== undefined ? st.sunHandLength : 680;
+        document.getElementById('dp-clock-sun-length').value = sL;
+        document.getElementById('dp-clock-sun-length-val').innerText = sL;
+
+        const pR = st.centerPivotRadius !== undefined ? st.centerPivotRadius : 12;
+        document.getElementById('dp-clock-pivot-radius').value = pR;
+        document.getElementById('dp-clock-pivot-radius-val').innerText = pR;
+        document.getElementById('dp-clock-pivot-color').value = st.centerPivotColor || "#8b8170";
+    }
+
     if (currentDesignTarget === 'canvasBg') {
         document.getElementById('dp-group-shape').style.display = 'flex';
         document.getElementById('dp-row-shape-fill').style.display = 'flex';
@@ -490,6 +531,24 @@ function updateDesign() {
         document.getElementById('dp-zodiac-bg-opacity-val').innerText = st.bgRingOpacity;
     }
 
+    if (currentDesignTarget === 'clockHands') {
+        st.moonHandColor = document.getElementById('dp-clock-moon-color').value;
+        st.moonHandWidth = parseFloat(document.getElementById('dp-clock-moon-width').value);
+        document.getElementById('dp-clock-moon-width-val').innerText = st.moonHandWidth;
+        st.moonHandLength = parseFloat(document.getElementById('dp-clock-moon-length').value);
+        document.getElementById('dp-clock-moon-length-val').innerText = st.moonHandLength;
+
+        st.sunHandColor = document.getElementById('dp-clock-sun-color').value;
+        st.sunHandWidth = parseFloat(document.getElementById('dp-clock-sun-width').value);
+        document.getElementById('dp-clock-sun-width-val').innerText = st.sunHandWidth;
+        st.sunHandLength = parseFloat(document.getElementById('dp-clock-sun-length').value);
+        document.getElementById('dp-clock-sun-length-val').innerText = st.sunHandLength;
+
+        st.centerPivotRadius = parseFloat(document.getElementById('dp-clock-pivot-radius').value);
+        document.getElementById('dp-clock-pivot-radius-val').innerText = st.centerPivotRadius;
+        st.centerPivotColor = document.getElementById('dp-clock-pivot-color').value;
+    }
+
     if (currentDesignTarget === 'canvasBg') {
         st.fill = document.getElementById('dp-shape-fill').value;
         document.body.style.backgroundColor = st.fill;
@@ -590,6 +649,7 @@ function triggerRedraw(target) {
         if (target === 'astroPins' && typeof drawAstronomicalPins === 'function') drawAstronomicalPins(window.lastCycleStartTimeMs);
         if (['lunarMansion', 'zodiacRing'].includes(target) && typeof drawLunarMansions === 'function') drawLunarMansions(window.lastCycleStartTimeMs);
         if (['lunarMansion', 'zodiacRing'].includes(target) && typeof drawZodiacRing === 'function') drawZodiacRing(window.lastCycleStartTimeMs);
+        if (target === 'clockHands' && typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
         if (['moonRisePin', 'moonSetPin'].includes(target) && typeof drawMoonEventPins === 'function') drawMoonEventPins(window.lastCycleStartTimeMs); 
     }
 
