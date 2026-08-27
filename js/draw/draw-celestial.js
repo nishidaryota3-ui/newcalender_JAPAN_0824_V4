@@ -134,11 +134,11 @@ function drawLunarMansions(cycleStartTime) {
             else if (prevMansionIdx >= 14 && prevMansionIdx <= 20) mansionColor = st.colorWest || "#888888";
             else if (prevMansionIdx >= 21 && prevMansionIdx <= 26) mansionColor = st.colorSouth || "#888888";
 
-            // 漢字（文字）は内周側へ配置
+            // 漢字（文字）は内周側へ配置（中心から見て正立する向きに設定）
             const ptText = polarToCartesian(cx, cy, rBase + kanjiCenterOffset, midAngle);
             const textEl = createSVGElem("text", {
                 x: ptText.x, y: ptText.y, fill: mansionColor, "font-size": `${fontSize}px`, "font-family": st.fontFamily,
-                "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle + 180}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
+                "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
             }, mansionData ? mansionData.name : "");
             g.appendChild(textEl);
 
@@ -174,7 +174,7 @@ function drawLunarMansions(cycleStartTime) {
         const ptText = polarToCartesian(cx, cy, rBase + kanjiCenterOffset, midAngle);
         const textEl = createSVGElem("text", {
             x: ptText.x, y: ptText.y, fill: mansionColor, "font-size": `${fontSize}px`, "font-family": st.fontFamily,
-            "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle + 180}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
+            "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(${midAngle}, ${ptText.x}, ${ptText.y})`, opacity: st.opacity
         }, mansionData ? mansionData.name : "");
         g.appendChild(textEl);
 
