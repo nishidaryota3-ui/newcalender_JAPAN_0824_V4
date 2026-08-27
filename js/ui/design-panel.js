@@ -82,6 +82,23 @@ function initDesignPanel() {
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-mansion-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-mansion-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-bg-opacity-val" style="width:30px; text-align:right;">0.05</span></label>
             </div>
+            <div id="dp-group-zodiac" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
+                <label style="display:flex; justify-content:space-between; align-items:center;">表示形式: 
+                    <select id="dp-zodiac-display-type" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:140px;">
+                        <option value="symbol">記号 (♈︎ ♉︎ ♊︎...)</option>
+                        <option value="jp">日本語 (牡羊座...)</option>
+                        <option value="en">英語 (Aries...)</option>
+                    </select>
+                </label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">文字サイズ: <input type="number" id="dp-zodiac-font-size" style="width:60px; background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px;" min="8" max="60" step="1" value="22"></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">文字色: <input type="color" id="dp-zodiac-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
+                <label style="display:flex; justify-content:space-between; align-items:center;">仕切り線の色: <input type="color" id="dp-zodiac-divider-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">仕切り線の太さ: <input type="range" id="dp-zodiac-divider-width" min="0" max="5" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-divider-width-val" style="width:30px; text-align:right;">1</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">配置位置 (半径ズラし): <input type="range" id="dp-zodiac-radius-offset" min="-200" max="200" step="1" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-radius-offset-val" style="width:30px; text-align:right;">0</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-zodiac-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-zodiac-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-bg-opacity-val" style="width:30px; text-align:right;">0.03</span></label>
+            </div>
             <div id="dp-group-shape" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
                 <label id="dp-row-shape-type" style="display:flex; justify-content:space-between; align-items:center;">図形の形: 
                     <select id="dp-shape" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:120px;">
@@ -196,7 +213,7 @@ function initDesignPanel() {
         }
     };
 
-    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
+    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-zodiac-display-type', 'dp-zodiac-font-size', 'dp-zodiac-color', 'dp-zodiac-divider-color', 'dp-zodiac-divider-width', 'dp-zodiac-radius-offset', 'dp-zodiac-bg-color', 'dp-zodiac-bg-opacity', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (id === 'dp-lunar-phase') el.addEventListener('change', loadPanelData);
@@ -341,6 +358,24 @@ function loadPanelData() {
         document.getElementById('dp-mansion-bg-opacity-val').innerText = bgOp;
     }
 
+    if (currentDesignTarget === 'zodiacRing') {
+        document.getElementById('dp-group-zodiac').style.display = 'flex';
+        document.getElementById('dp-zodiac-display-type').value = st.displayType || 'symbol';
+        document.getElementById('dp-zodiac-font-size').value = st.fontSize !== undefined ? st.fontSize : 22;
+        document.getElementById('dp-zodiac-color').value = st.color || "#8a8171";
+        document.getElementById('dp-zodiac-divider-color').value = st.dividerColor || "#8b8170";
+        const divW = st.dividerWidth !== undefined ? st.dividerWidth : 1.0;
+        document.getElementById('dp-zodiac-divider-width').value = divW;
+        document.getElementById('dp-zodiac-divider-width-val').innerText = divW;
+        const rOffset = st.radiusOffset !== undefined ? st.radiusOffset : 0;
+        document.getElementById('dp-zodiac-radius-offset').value = rOffset;
+        document.getElementById('dp-zodiac-radius-offset-val').innerText = rOffset;
+        document.getElementById('dp-zodiac-bg-color').value = st.bgRingColor || "#ffffff";
+        const bgOp = st.bgRingOpacity !== undefined ? st.bgRingOpacity : 0.03;
+        document.getElementById('dp-zodiac-bg-opacity').value = bgOp;
+        document.getElementById('dp-zodiac-bg-opacity-val').innerText = bgOp;
+    }
+
     if (currentDesignTarget === 'canvasBg') {
         document.getElementById('dp-group-shape').style.display = 'flex';
         document.getElementById('dp-row-shape-fill').style.display = 'flex';
@@ -441,6 +476,20 @@ function updateDesign() {
         document.getElementById('dp-mansion-bg-opacity-val').innerText = st.bgRingOpacity;
     }
 
+    if (currentDesignTarget === 'zodiacRing') {
+        st.displayType = document.getElementById('dp-zodiac-display-type').value;
+        st.fontSize = parseFloat(document.getElementById('dp-zodiac-font-size').value) || 22;
+        st.color = document.getElementById('dp-zodiac-color').value;
+        st.dividerColor = document.getElementById('dp-zodiac-divider-color').value;
+        st.dividerWidth = parseFloat(document.getElementById('dp-zodiac-divider-width').value);
+        document.getElementById('dp-zodiac-divider-width-val').innerText = st.dividerWidth;
+        st.radiusOffset = parseFloat(document.getElementById('dp-zodiac-radius-offset').value);
+        document.getElementById('dp-zodiac-radius-offset-val').innerText = st.radiusOffset;
+        st.bgRingColor = document.getElementById('dp-zodiac-bg-color').value;
+        st.bgRingOpacity = parseFloat(document.getElementById('dp-zodiac-bg-opacity').value);
+        document.getElementById('dp-zodiac-bg-opacity-val').innerText = st.bgRingOpacity;
+    }
+
     if (currentDesignTarget === 'canvasBg') {
         st.fill = document.getElementById('dp-shape-fill').value;
         document.body.style.backgroundColor = st.fill;
@@ -539,13 +588,14 @@ function triggerRedraw(target) {
         if (['rainGraph', 'guideRainLine', 'guideRainText'].includes(target) && typeof drawRainfallGraph === 'function') drawRainfallGraph(window.lastCycleStartTimeMs);
         if (target === 'lunarShadow' && typeof drawLunarShadow === 'function') drawLunarShadow(window.lastCycleStartTimeMs);
         if (target === 'astroPins' && typeof drawAstronomicalPins === 'function') drawAstronomicalPins(window.lastCycleStartTimeMs);
-        if (target === 'lunarMansion' && typeof drawLunarMansions === 'function') drawLunarMansions(window.lastCycleStartTimeMs);
+        if (['lunarMansion', 'zodiacRing'].includes(target) && typeof drawLunarMansions === 'function') drawLunarMansions(window.lastCycleStartTimeMs);
+        if (['lunarMansion', 'zodiacRing'].includes(target) && typeof drawZodiacRing === 'function') drawZodiacRing(window.lastCycleStartTimeMs);
         if (['moonRisePin', 'moonSetPin'].includes(target) && typeof drawMoonEventPins === 'function') drawMoonEventPins(window.lastCycleStartTimeMs); 
     }
 
     if (window.lastKoyomiStartDate) {
         if (['dailyRainBg', 'dailyRainText'].includes(target) && typeof drawDailyRainStats === 'function') drawDailyRainStats(window.lastKoyomiStartDate);
-        if (target === 'haikuText' && typeof drawHaikus === 'function') drawHaikus(window.lastKoyomiStartDate);
+        if (['lunarMansion', 'zodiacRing', 'haikuText'].includes(target) && typeof drawHaikus === 'function') drawHaikus(window.lastKoyomiStartDate);
         if (['gregorian', 'weekday', 'sekki', 'kou', 'zassetsu', 'holiday', 'important', 'eventShinto', 'eventBuddhism', 'eventChurch', 'eventSonota', 'lunar', 'wafuText', 'gregorianText'].includes(target) && typeof drawKoyomiEvents === 'function') drawKoyomiEvents(window.lastKoyomiStartDate);
         if (['sunRisePin', 'sunSetPin'].includes(target) && typeof drawSunEventPins === 'function') drawSunEventPins(window.lastKoyomiStartDate); 
     }

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polar Calendar - 分割・精密ペイント版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
         .panel-ui, #layer-panel, #palette-container, #status-bar, button, input, select {
@@ -42,9 +45,10 @@
             <div class="layer-item"><input type="checkbox" id="toggle-base-svg" checked><label for="toggle-base-svg">ベース図形</label><button class="layer-settings-btn" data-target="baseSvg" title="デザイン設定">⚙️</button></div>
             <div class="layer-item"><input type="checkbox" id="toggle-lunar-shadow" checked><label for="toggle-lunar-shadow">月相シャドウ (ハート型)</label><button class="layer-settings-btn" data-target="lunarShadow" title="デザイン設定">⚙️</button></div>
 
-            <!-- 天文学的ピン -->
+            <!-- 天文学的ピン & 星座帯 -->
             <div class="layer-item"><input type="checkbox" id="toggle-astro-pins" checked><label for="toggle-astro-pins">天文学的ピン (朔望)</label><button class="layer-settings-btn" data-target="astroPins" title="デザイン設定">⚙️</button></div>
-            <div class="layer-item"><input type="checkbox" id="toggle-layer-lunar" checked><label for="toggle-layer-lunar">二十七宿 (一番外周)</label><button class="layer-settings-btn" data-target="lunarMansion" title="デザイン設定">⚙️</button></div>
+            <div class="layer-item"><input type="checkbox" id="toggle-layer-lunar" checked><label for="toggle-layer-lunar">二十七宿 (中外周)</label><button class="layer-settings-btn" data-target="lunarMansion" title="デザイン設定">⚙️</button></div>
+            <div class="layer-item"><input type="checkbox" id="toggle-layer-zodiac" checked><label for="toggle-layer-zodiac">黄道十二星座 (外周帯)</label><button class="layer-settings-btn" data-target="zodiacRing" title="デザイン設定">⚙️</button></div>
 
             <!-- ▼ ここに出没ピン用のレイヤー設定をHTMLとして直接追記しました ▼ -->
             <div class="layer-group-title">▼ 出没ピン (天文学自動計算)</div>

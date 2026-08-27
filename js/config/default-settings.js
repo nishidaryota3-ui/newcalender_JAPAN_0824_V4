@@ -19,6 +19,18 @@ window.defaultLayerSettings = {
         colorEast: "#888888", colorSouth: "#888888", colorWest: "#888888", colorNorth: "#888888",
         starSize: 1.5, markScale: 4.0, radiusOffset: 0, bgRingColor: "#ffffff", bgRingOpacity: 0.05
     },
+    zodiacRing: {
+        displayType: "symbol",
+        fontFamily: "'Cinzel', 'Shippori Mincho', serif",
+        fontSize: 22,
+        color: "#8a8171",
+        dividerColor: "#8b8170",
+        dividerWidth: 1.0,
+        opacity: 0.85,
+        radiusOffset: 0,
+        bgRingColor: "#ffffff",
+        bgRingOpacity: 0.03
+    },
     tideGraph: { stroke: "#3b82f6", strokeWidth: 1.5, opacity: 1 },
     rainGraph: { stroke: "rgba(14, 165, 233, 0.8)", strokeWidth: 1.5, opacity: 1 },
     dailyRainBg: { fill: "rgba(14, 165, 233, 1)", opacity: 1, density: 0.35 },

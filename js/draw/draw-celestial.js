@@ -213,6 +213,149 @@ function drawConstellationMark(g, index, x, y, angle, color, opacity, starSize, 
 }
 
 /**
+ * 黄道十二星座リングを描画 (Astrolabe準拠デザイン)
+ */
+function drawZodiacRing(cycleStartTime) {
+    const layer = document.getElementById("layer-zodiac-ring");
+    if (!layer) return;
+    layer.innerHTML = "";
+    if (concentricRings.length === 0) return;
+
+    const st = getLayerStyle('zodiacRing');
+    if (!st || st.opacity === 0) return;
+
+    const stMansion = getLayerStyle('lunarMansion');
+    
+    // 二十七宿の外側に自動配置
+    const mansionFontSize = stMansion.fontSize !== undefined ? stMansion.fontSize : 20;
+    const mansionMarkScale = stMansion.markScale !== undefined ? stMansion.markScale : 4.0;
+    const mansionKanjiOffset = Math.max(14, mansionFontSize * 0.8);
+    const mansionKanjiOuter = mansionKanjiOffset + mansionFontSize * 0.55;
+    const mansionGap = 18 + mansionMarkScale * 2;
+    const mansionMarkRadius = 4 * mansionMarkScale;
+    const mansionBandWidth = mansionKanjiOuter + mansionGap + mansionMarkRadius * 2 + 16;
+    const rBaseMansion = concentricRings[concentricRings.length - 1] + 60 + (stMansion.radiusOffset || 0);
+    const rMaxMansion = rBaseMansion + mansionBandWidth;
+
+    const fontSize = st.fontSize !== undefined ? st.fontSize : 22;
+    const bandWidth = Math.max(32, fontSize + 14);
+    const rBase = rMaxMansion + 6 + (st.radiusOffset || 0);
+    const rMax = rBase + bandWidth;
+    const rText = (rBase + rMax) / 2;
+
+    const resolution = 2;
+    const totalHours = window.currentMonthDays * 24;
+    const startAngle = currentStartSegment * DEGREES_PER_SEGMENT;
+
+    const g = createSVGElem("g", { class: "layer-zodiac-ring-group" });
+    
+    // 背景リング
+    const bgRing = createSVGElem("circle", {
+        cx: cx, cy: cy, r: (rBase + rMax) / 2,
+        fill: "none",
+        stroke: st.bgRingColor || "#ffffff",
+        "stroke-width": bandWidth,
+        opacity: (st.opacity * (st.bgRingOpacity !== undefined ? st.bgRingOpacity : 0.04))
+    });
+    g.appendChild(bgRing);
+
+    // 外周・内周の境界同心円
+    const dividerColor = st.dividerColor || "#8b8170";
+    const dividerWidth = st.dividerWidth !== undefined ? st.dividerWidth : 1.0;
+    if (dividerWidth > 0) {
+        g.appendChild(createSVGElem("circle", { cx: cx, cy: cy, r: rBase, fill: "none", stroke: dividerColor, "stroke-width": dividerWidth * 0.5, opacity: st.opacity * 0.5 }));
+        g.appendChild(createSVGElem("circle", { cx: cx, cy: cy, r: rMax, fill: "none", stroke: dividerColor, "stroke-width": dividerWidth * 0.8, opacity: st.opacity * 0.6 }));
+    }
+
+    let prevZodiacIdx = -1;
+    let boundaryAngle = startAngle;
+
+    for (let i = 0; i <= totalHours * resolution; i++) {
+        const timeMs = cycleStartTime + (i / resolution) * MS_PER_HOUR;
+        const lambdaMoon = getLunarLongitude(timeMs);
+        const zodiacIdx = Math.floor((lambdaMoon % 360) / 30);
+        const currentAngle = startAngle + (i / resolution) * DEGREES_PER_HOUR;
+
+        if (prevZodiacIdx !== -1 && zodiacIdx !== prevZodiacIdx) {
+            // 30度境界の仕切り線
+            if (dividerWidth > 0) {
+                const p1 = polarToCartesian(cx, cy, rBase, currentAngle);
+                const p2 = polarToCartesian(cx, cy, rMax, currentAngle);
+                g.appendChild(createSVGElem("line", {
+                    x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
+                    stroke: dividerColor, "stroke-width": dividerWidth, opacity: st.opacity * 0.7
+                }));
+            }
+
+            const midAngle = (boundaryAngle + currentAngle) / 2;
+            const sign = window.zodiacSigns ? window.zodiacSigns[prevZodiacIdx] : null;
+            if (sign) {
+                let displayText = sign.symbol;
+                if (st.displayType === 'jp') displayText = sign.jp;
+                else if (st.displayType === 'en') displayText = sign.name;
+
+                const ptText = polarToCartesian(cx, cy, rText, midAngle);
+                const textEl = createSVGElem("text", {
+                    x: ptText.x, y: ptText.y,
+                    fill: st.color || "#8a8171",
+                    "font-size": `${fontSize}px`,
+                    "font-family": st.fontFamily || "'Cinzel', 'Shippori Mincho', serif",
+                    "font-weight": "normal",
+                    "text-anchor": "middle",
+                    "dominant-baseline": "central",
+                    transform: `rotate(${midAngle}, ${ptText.x}, ${ptText.y})`,
+                    opacity: st.opacity
+                }, displayText);
+                g.appendChild(textEl);
+            }
+
+            boundaryAngle = currentAngle;
+        }
+
+        if (i === 0) {
+            if (dividerWidth > 0) {
+                const p1 = polarToCartesian(cx, cy, rBase, currentAngle);
+                const p2 = polarToCartesian(cx, cy, rMax, currentAngle);
+                g.appendChild(createSVGElem("line", {
+                    x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
+                    stroke: dividerColor, "stroke-width": dividerWidth, opacity: st.opacity * 0.7
+                }));
+            }
+            boundaryAngle = currentAngle;
+        }
+
+        prevZodiacIdx = zodiacIdx;
+    }
+
+    if (boundaryAngle < startAngle + totalHours * DEGREES_PER_HOUR) {
+        const finalAngle = startAngle + totalHours * DEGREES_PER_HOUR;
+        const midAngle = (boundaryAngle + finalAngle) / 2;
+        const sign = window.zodiacSigns ? window.zodiacSigns[prevZodiacIdx] : null;
+        if (sign) {
+            let displayText = sign.symbol;
+            if (st.displayType === 'jp') displayText = sign.jp;
+            else if (st.displayType === 'en') displayText = sign.name;
+
+            const ptText = polarToCartesian(cx, cy, rText, midAngle);
+            const textEl = createSVGElem("text", {
+                x: ptText.x, y: ptText.y,
+                fill: st.color || "#8a8171",
+                "font-size": `${fontSize}px`,
+                "font-family": st.fontFamily || "'Cinzel', 'Shippori Mincho', serif",
+                "font-weight": "normal",
+                "text-anchor": "middle",
+                "dominant-baseline": "central",
+                transform: `rotate(${midAngle}, ${ptText.x}, ${ptText.y})`,
+                opacity: st.opacity
+            }, displayText);
+            g.appendChild(textEl);
+        }
+    }
+
+    layer.appendChild(g);
+}
+
+/**
  * 共通天体ピン（出没）の描画ヘルパー
  */
 function drawCelestialPin(timeDate, isRise, stRise, stSet, riseLayer, setLayer, cycleStartTimeMs, rMin, rMax, startAngle) {

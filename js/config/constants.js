@@ -72,3 +72,19 @@ const iconTrash = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" s
 const iconHome = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
 const iconPrint = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`;
 const iconDrop = `<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+
+// --- 黄道十二星座 (Astrolabe準拠) ---
+window.zodiacSigns = [
+    { name: "Aries", jp: "牡羊座", symbol: "♈\uFE0E" },
+    { name: "Taurus", jp: "牡牛座", symbol: "♉\uFE0E" },
+    { name: "Gemini", jp: "双子座", symbol: "♊\uFE0E" },
+    { name: "Cancer", jp: "蟹座", symbol: "♋\uFE0E" },
+    { name: "Leo", jp: "獅子座", symbol: "♌\uFE0E" },
+    { name: "Virgo", jp: "乙女座", symbol: "♍\uFE0E" },
+    { name: "Libra", jp: "天秤座", symbol: "♎\uFE0E" },
+    { name: "Scorpio", jp: "蠍座", symbol: "♏\uFE0E" },
+    { name: "Sagittarius", jp: "射手座", symbol: "♐\uFE0E" },
+    { name: "Capricorn", jp: "山羊座", symbol: "♑\uFE0E" },
+    { name: "Aquarius", jp: "水瓶座", symbol: "♒\uFE0E" },
+    { name: "Pisces", jp: "魚座", symbol: "♓\uFE0E" }
+];
