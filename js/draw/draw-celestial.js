@@ -513,15 +513,20 @@ function drawClockHands(cycleStartTime) {
         isStandby = true;
     }
 
-    const timeOffsetMs = targetTimeMs - cycleStartTime;
-    const hoursIntoMonth = Math.max(0, Math.min(monthDays * 24, timeOffsetMs / MS_PER_HOUR));
+    // 天文学的実空間の黄道経度（Meeus計算）による完全同期（案B）
+    const startMoonLong = getLunarLongitude(cycleStartTime);
+    const startSunLong = getSolarLongitude(cycleStartTime);
     
-    // 月針の角度（30日の時間軸・天球上を1ヶ月で360度一周する）
-    const moonAngle = currentStartSegment * DEGREES_PER_SEGMENT + hoursIntoMonth * DEGREES_PER_HOUR;
+    const curMoonLong = getLunarLongitude(targetTimeMs);
+    const curSunLong = getSolarLongitude(targetTimeMs);
+
+    // 月針の角度（天球上の実際の黄道経度変化：新月0度 → 満月180度 → 次の新月389度=29度）
+    const moonDelta = (curMoonLong - startMoonLong + 360) % 360;
+    const moonAngle = currentStartSegment * DEGREES_PER_SEGMENT + moonDelta;
     
-    // 太陽針の角度（天球文字盤上を1年で360度一周する：1日約0.9856度進む）
-    // ※新月(0日目)に月と太陽が重なり、満月(15日目・今日)には中心を挟んでほぼ一直線(180度)に向き合います
-    const sunAngle = currentStartSegment * DEGREES_PER_SEGMENT + (hoursIntoMonth / 24) * 0.9856;
+    // 太陽針の角度（天球上の実際の黄道経度変化：1ヶ月で約29度進む）
+    const sunDelta = (curSunLong - startSunLong + 360) % 360;
+    const sunAngle = currentStartSegment * DEGREES_PER_SEGMENT + sunDelta;
 
     const g = createSVGElem("g", { class: "clock-hands-group", opacity: st.opacity });
 
