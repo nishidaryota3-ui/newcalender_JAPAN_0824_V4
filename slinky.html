@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D スリンキー・カレンダー (Slinky Spiral Calendar)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background-color: #050811;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Glassmorphism HUD Panels */
+        .hud-panel {
+            position: absolute;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+            pointer-events: auto;
+        }
+
+        #hud-header {
+            top: 20px;
+            left: 20px;
+            max-width: 420px;
+        }
+        #hud-controls {
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+        }
+        #hud-info {
+            top: 20px;
+            right: 20px;
+            width: 320px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            color: #d4af37;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+        button {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #d4af37;
+            transform: translateY(-1px);
+        }
+        button.active {
+            background: #d4af37;
+            color: #0f172a;
+            font-weight: 700;
+            border-color: #f59e0b;
+        }
+
+        /* Sliders */
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            gap: 12px;
+        }
+        .control-label {
+            color: #cbd5e1;
+            white-space: nowrap;
+        }
+        input[type=range] {
+            flex: 1;
+            accent-color: #d4af37;
+            cursor: pointer;
+        }
+
+        /* Info Display */
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-top: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 12px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+        .stat-k { color: #94a3b8; }
+        .stat-v { color: #f1f5f9; font-weight: bold; font-family: monospace; }
+        
+        .nav-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 11px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        .nav-back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <!-- Top Left: Title & Overview -->
+    <div id="hud-header" class="hud-panel">
+        <h1>🌀 Slinky Spiral Calendar</h1>
+        <div class="subtitle">太陰太陽暦・立体螺旋（スリンキー）プロトタイプ<br>平面の円盤が、時間（Z軸）の深さへ伸びていく生命時計</div>
+        
+        <div class="control-row" style="margin-top:12px;">
+            <span class="control-label">🌀 スリンキーの伸び (ピッチ):</span>
+            <input type="range" id="slider-pitch" min="0" max="60" step="1" value="28">
+            <span id="val-pitch" style="font-family:monospace; font-size:11px; width:30px; text-align:right;">28</span>
+        </div>
+
+        <div class="control-row">
+            <span class="control-label">📅 表示期間 (段数):</span>
+            <input type="range" id="slider-coils" min="1" max="12" step="1" value="6">
+            <span id="val-coils" style="font-family:monospace; font-size:11px; width:30px; text-align:right;">6ヶ月</span>
+        </div>
+
+        <a href="index.html" class="nav-back-link">⬅ 2D 平面カレンダーに戻る</a>
+    </div>
+
+    <!-- Top Right: Celestial Status -->
+    <div id="hud-info" class="hud-panel">
+        <div style="font-size:13px; font-weight:bold; color:#d4af37; margin-bottom:6px; display:flex; justify-content:space-between;">
+            <span>🌌 天体・生命螺旋ステータス</span>
+            <span id="badge-mode" style="font-size:10px; background:rgba(212,175,55,0.2); padding:1px 6px; border-radius:4px; border:1px solid #d4af37;">3D 螺旋モード</span>
+        </div>
+        <div class="stat-box">
+            <div class="stat-item"><span class="stat-k">起点（1段目）:</span><span class="stat-v">2026年 8月 (葉月)</span></div>
+            <div class="stat-item"><span class="stat-k">1周の周期:</span><span class="stat-v">29.53 日 (朔望月)</span></div>
+            <div class="stat-item"><span class="stat-k">月ごとの星空ズレ:</span><span class="stat-v">+29.1 度 (螺旋角)</span></div>
+            <div class="stat-item"><span class="stat-k">1年の総回転:</span><span class="stat-v">360 度 (四季1巡)</span></div>
+        </div>
+        <div style="font-size:11px; color:#94a3b8; margin-top:8px; line-height:1.4;">
+            💡 <b>ピッチを「0」にすると</b>、完全な2D平面カレンダーに折りたたまれます。ピッチを広げると、時間が未来へ伸びる3Dスリンキーになります。
+        </div>
+    </div>
+
+    <!-- Bottom: View Cameras & Navigation -->
+    <div id="hud-controls" class="hud-panel">
+        <div class="btn-group">
+            <button id="btn-view-2d">📐 2D 平面俯瞰</button>
+            <button id="btn-view-3d" class="active">🌀 3D 螺旋斜視</button>
+            <button id="btn-view-tunnel">🚀 トンネル潜航</button>
+        </div>
+        <div style="width:1px; height:20px; background:rgba(255,255,255,0.2);"></div>
+        <button id="btn-play">▶ 時間の旅 (自転)</button>
+        <button id="btn-reset-cam">🔄 カメラリセット</button>
+    </div>
+
+    <!-- Three.js & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // --- 1. Scene, Camera, Renderer Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050811, 0.0018);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2500);
+        camera.position.set(0, -190, 160);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 1000;
+        controls.minDistance = 20;
+
+        // --- 2. Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfff3d6, 1.2);
+        sunLight.position.set(120, -120, 250);
+        scene.add(sunLight);
+
+        const blueLight = new THREE.PointLight(0x38bdf8, 1.8, 500);
+        blueLight.position.set(0, 0, 80);
+        scene.add(blueLight);
+
+        // --- 3. Background Cosmic Stars ---
+        const starsGeo = new THREE.BufferGeometry();
+        const starCount = 2500;
+        const starPos = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount * 3; i += 3) {
+            const r = 500 + Math.random() * 500;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(Math.random() * 2 - 1);
+            starPos[i] = r * Math.sin(phi) * Math.cos(theta);
+            starPos[i+1] = r * Math.sin(phi) * Math.sin(theta);
+            starPos[i+2] = r * Math.cos(phi);
+        }
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starsMat = new THREE.PointsMaterial({ color: 0xa5b4fc, size: 1.5, transparent: true, opacity: 0.65 });
+        const starField = new THREE.Points(starsGeo, starsMat);
+        scene.add(starField);
+
+        // --- 4. Slinky Geometry Builder ---
+        const slinkyGroup = new THREE.Group();
+        scene.add(slinkyGroup);
+
+        const monthNames = [
+            "2026年 8月 (葉月)", "2026年 9月 (長月)", "2026年 10月 (神無月)", 
+            "2026年 11月 (霜月)", "2026年 12月 (師走)", "2027年 1月 (睦月)", 
+            "2027年 2月 (如月)", "2027年 3月 (弥生)", "2027年 4月 (卯月)", 
+            "2027年 5月 (皐月)", "2027年 6月 (水無月)", "2027年 7月 (文月)"
+        ];
+        const zodiacSymbols = [
+            "♌︎ 獅子座", "♍︎ 乙女座", "♎︎ 天秤座", "♏︎ 蠍座", 
+            "♐︎ 射手座", "♑︎ 山羊座", "♒︎ 水瓶座", "♓︎ 魚座", 
+            "♈︎ 牡羊座", "♉︎ 牡牛座", "♊︎ 双子座", "♋︎ 蟹座"
+        ];
+
+        let currentPitch = 28;
+        let currentCoils = 6;
+
+        function buildSlinky() {
+            while (slinkyGroup.children.length > 0) {
+                const obj = slinkyGroup.children[0];
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+                    else obj.material.dispose();
+                }
+                slinkyGroup.remove(obj);
+            }
+
+            const rInner = 28;
+            const rOuter = 82;
+            const segmentsPerTurn = 120; // 30 days * 4 slots
+
+            for (let m = 0; m < currentCoils; m++) {
+                const coilGroup = new THREE.Group();
+                const totalSegments = segmentsPerTurn;
+
+                const positions = [];
+                const colors = [];
+                const uvs = [];
+                const indices = [];
+
+                // Base start angle (+29.1 deg shift per month) & Z shift
+                const startAngle = m * (29.1 * Math.PI / 180);
+                const baseZ = m * currentPitch;
+
+                for (let i = 0; i <= totalSegments; i++) {
+                    const frac = i / totalSegments;
+                    const angle = startAngle + frac * Math.PI * 2;
+                    const z = baseZ + frac * currentPitch;
+
+                    const cosA = Math.cos(angle);
+                    const sinA = Math.sin(angle);
+
+                    // Inner vertex (Tide & Rain band)
+                    const xIn = rInner * cosA;
+                    const yIn = rInner * sinA;
+                    positions.push(xIn, yIn, z);
+
+                    // Outer vertex (Date & Haiku band)
+                    const xOut = rOuter * cosA;
+                    const yOut = rOuter * sinA;
+                    positions.push(xOut, yOut, z);
+
+                    // Colors along the phase: New Moon (Deep Blue/Gold) -> Full Moon (Luminous Cyan/White)
+                    const phase = 1.0 - Math.abs(frac - 0.5) * 2; // 0 at new moon, 1 at full moon
+                    const rCol = 0.12 + phase * 0.45;
+                    const gCol = 0.22 + phase * 0.58;
+                    const bCol = 0.42 + phase * 0.58;
+                    
+                    colors.push(rCol * 0.6, gCol * 0.7, bCol * 0.95); // inner
+                    colors.push(rCol * 0.95, gCol * 0.85, bCol * 0.45); // outer
+
+                    uvs.push(0, frac);
+                    uvs.push(1, frac);
+
+                    if (i < totalSegments) {
+                        const v1 = i * 2;
+                        const v2 = i * 2 + 1;
+                        const v3 = (i + 1) * 2;
+                        const v4 = (i + 1) * 2 + 1;
+
+                        indices.push(v1, v2, v3);
+                        indices.push(v2, v4, v3);
+                    }
+                }
+
+                const ribbonGeo = new THREE.BufferGeometry();
+                ribbonGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                ribbonGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                ribbonGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+                ribbonGeo.setIndex(indices);
+                ribbonGeo.computeVertexNormals();
+
+                const ribbonMat = new THREE.MeshStandardMaterial({
+                    vertexColors: true,
+                    side: THREE.DoubleSide,
+                    roughness: 0.32,
+                    metalness: 0.65,
+                    transparent: true,
+                    opacity: 0.88
+                });
+
+                const ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
+                coilGroup.add(ribbonMesh);
+
+                // --- Inner & Outer Edge Gold Rails ---
+                const innerPoints = [];
+                const outerPoints = [];
+                const midTidePoints = [];
+
+                for (let i = 0; i <= totalSegments; i++) {
+                    const frac = i / totalSegments;
+                    const angle = startAngle + frac * Math.PI * 2;
+                    const z = baseZ + frac * currentPitch;
+                    innerPoints.push(new THREE.Vector3(rInner * Math.cos(angle), rInner * Math.sin(angle), z));
+                    outerPoints.push(new THREE.Vector3(rOuter * Math.cos(angle), rOuter * Math.sin(angle), z));
+
+                    // Simulated tidal wave along the ribbon
+                    const tideHeight = Math.sin(frac * Math.PI * 8) * 3;
+                    const rMid = (rInner + rOuter) * 0.45 + tideHeight;
+                    midTidePoints.push(new THREE.Vector3(rMid * Math.cos(angle), rMid * Math.sin(angle), z + 0.3));
+                }
+
+                const railInner = new THREE.Line(new THREE.BufferGeometry().setFromPoints(innerPoints), new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 1.5, transparent: true, opacity: 0.7 }));
+                coilGroup.add(railInner);
+
+                const railOuter = new THREE.Line(new THREE.BufferGeometry().setFromPoints(outerPoints), new THREE.LineBasicMaterial({ color: 0xd4af37, linewidth: 2, transparent: true, opacity: 0.9 }));
+                coilGroup.add(railOuter);
+
+                const tideWaveLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(midTidePoints), new THREE.LineBasicMaterial({ color: 0x0ea5e9, linewidth: 1.5, transparent: true, opacity: 0.85 }));
+                coilGroup.add(tideWaveLine);
+
+                // --- Moon Phase Glowing Marker (Full Moon / 満月 at mid) ---
+                const midAngle = startAngle + Math.PI;
+                const midZ = baseZ + 0.5 * currentPitch;
+                const fullMoonGeo = new THREE.SphereGeometry(2.8, 16, 16);
+                const fullMoonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const fullMoonMesh = new THREE.Mesh(fullMoonGeo, fullMoonMat);
+                fullMoonMesh.position.set((rInner + rOuter) * 0.5 * Math.cos(midAngle), (rInner + rOuter) * 0.5 * Math.sin(midAngle), midZ + 1.2);
+                coilGroup.add(fullMoonMesh);
+
+                // --- Month Tag Billboard ---
+                const tagAngle = startAngle;
+                const tagZ = baseZ;
+                const tagX = (rOuter + 10) * Math.cos(tagAngle);
+                const tagY = (rOuter + 10) * Math.sin(tagAngle);
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+                ctx.fillRect(0, 0, 256, 64);
+                ctx.strokeStyle = "#d4af37";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(2, 2, 252, 60);
+                ctx.fillStyle = "#d4af37";
+                ctx.font = "bold 20px 'Shippori Mincho', serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(monthNames[m % 12], 128, 32);
+
+                const tagTexture = new THREE.CanvasTexture(canvas);
+                const tagMat = new THREE.SpriteMaterial({ map: tagTexture, transparent: true });
+                const tagSprite = new THREE.Sprite(tagMat);
+                tagSprite.position.set(tagX, tagY, tagZ + 3);
+                tagSprite.scale.set(24, 6, 1);
+                coilGroup.add(tagSprite);
+
+                slinkyGroup.add(coilGroup);
+            }
+        }
+
+        buildSlinky();
+
+        // --- 5. Outer Celestial Ring (12 Zodiac Dome) ---
+        const zodiacRingRadius = 120;
+        const zodiacRingGroup = new THREE.Group();
+        scene.add(zodiacRingGroup);
+
+        for (let s = 0; s < 12; s++) {
+            const zAngle = (s * 30) * Math.PI / 180;
+            const zX = zodiacRingRadius * Math.cos(zAngle);
+            const zY = zodiacRingRadius * Math.sin(zAngle);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 160;
+            canvas.height = 80;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = "rgba(212, 175, 55, 0.95)";
+            ctx.font = "bold 28px 'Cinzel', serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(zodiacSymbols[s], 80, 40);
+
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.85 });
+            const sprite = new THREE.Sprite(mat);
+            sprite.position.set(zX, zY, currentPitch * currentCoils * 0.5);
+            sprite.scale.set(20, 10, 1);
+            zodiacRingGroup.add(sprite);
+        }
+
+        // Circular guide rings for zodiac
+        const zodiacCirclePts = [];
+        for (let a = 0; a <= 360; a += 3) {
+            const rad = a * Math.PI / 180;
+            zodiacCirclePts.push(new THREE.Vector3(zodiacRingRadius * Math.cos(rad), zodiacRingRadius * Math.sin(rad), currentPitch * currentCoils * 0.5));
+        }
+        const zodiacCircleGeo = new THREE.BufferGeometry().setFromPoints(zodiacCirclePts);
+        const zodiacCircleMat = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.35 });
+        zodiacRingGroup.add(new THREE.Line(zodiacCircleGeo, zodiacCircleMat));
+
+        // --- 6. UI Controls & Interactions ---
+        const sliderPitch = document.getElementById('slider-pitch');
+        const valPitch = document.getElementById('val-pitch');
+        sliderPitch.addEventListener('input', (e) => {
+            currentPitch = parseFloat(e.target.value);
+            valPitch.innerText = currentPitch;
+            buildSlinky();
+            updateZodiacHeight();
+        });
+
+        const sliderCoils = document.getElementById('slider-coils');
+        const valCoils = document.getElementById('val-coils');
+        sliderCoils.addEventListener('input', (e) => {
+            currentCoils = parseInt(e.target.value);
+            valCoils.innerText = `${currentCoils}ヶ月`;
+            buildSlinky();
+            updateZodiacHeight();
+        });
+
+        function updateZodiacHeight() {
+            zodiacRingGroup.children.forEach(c => {
+                c.position.z = currentPitch * currentCoils * 0.5;
+            });
+        }
+
+        // Camera transitions
+        function moveCameraTo(pos, look, duration = 1000) {
+            const startPos = camera.position.clone();
+            const startLook = controls.target.clone();
+            const startTime = performance.now();
+
+            function anim(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(1, elapsed / duration);
+                const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+                camera.position.lerpVectors(startPos, pos, ease);
+                controls.target.lerpVectors(startLook, look, ease);
+
+                if (t < 1) requestAnimationFrame(anim);
+            }
+            requestAnimationFrame(anim);
+        }
+
+        document.getElementById('btn-view-2d').onclick = () => {
+            document.querySelectorAll('#hud-controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-view-2d').classList.add('active');
+            document.getElementById('badge-mode').innerText = "2D 平面俯瞰ビュー";
+            moveCameraTo(new THREE.Vector3(0, 0, 240), new THREE.Vector3(0, 0, currentPitch * currentCoils * 0.5));
+        };
+
+        document.getElementById('btn-view-3d').onclick = () => {
+            document.querySelectorAll('#hud-controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-view-3d').classList.add('active');
+            document.getElementById('badge-mode').innerText = "3D 螺旋斜視ビュー";
+            moveCameraTo(new THREE.Vector3(0, -190, 160), new THREE.Vector3(0, 0, currentPitch * currentCoils * 0.5));
+        };
+
+        document.getElementById('btn-view-tunnel').onclick = () => {
+            document.querySelectorAll('#hud-controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-view-tunnel').classList.add('active');
+            document.getElementById('badge-mode').innerText = "トンネル潜航ビュー";
+            moveCameraTo(new THREE.Vector3(0, -50, -20), new THREE.Vector3(0, 0, currentPitch * currentCoils * 0.8));
+        };
+
+        document.getElementById('btn-reset-cam').onclick = () => {
+            moveCameraTo(new THREE.Vector3(0, -190, 160), new THREE.Vector3(0, 0, currentPitch * currentCoils * 0.5));
+        };
+
+        let isPlaying = false;
+        const btnPlay = document.getElementById('btn-play');
+        btnPlay.onclick = () => {
+            isPlaying = !isPlaying;
+            btnPlay.classList.toggle('active', isPlaying);
+            btnPlay.innerText = isPlaying ? "⏸ 一時停止" : "▶ 時間の旅 (自転)";
+        };
+
+        // --- 7. Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isPlaying) {
+                slinkyGroup.rotation.z += 0.003;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
