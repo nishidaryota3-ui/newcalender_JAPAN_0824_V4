@@ -525,7 +525,8 @@ function drawClockHands(cycleStartTime) {
 
     const g = createSVGElem("g", { class: "clock-hands-group", opacity: st.opacity });
 
-    const sunLen = st.sunHandLength || 680;
+    const handStyle = st.handStyle || "classic";
+    const sunLen = st.sunHandLength || 850;
     const sunW = st.sunHandWidth !== undefined ? st.sunHandWidth : 2.2;
     const sunCol = st.sunHandColor || "#c9743c";
 
@@ -536,62 +537,85 @@ function drawClockHands(cycleStartTime) {
     const pivotR = st.centerPivotRadius !== undefined ? st.centerPivotRadius : 12;
     const pivotCol = st.centerPivotColor || "#8b8170";
 
+    // 針の本体を描画するヘルパー
+    const renderHand = (parentG, style, len, angle, color, strokeW, isSun) => {
+        const pTip = polarToCartesian(cx, cy, len, angle);
+        const tailLen = isSun ? 50 : 70;
+        const pTail = polarToCartesian(cx, cy, tailLen, angle + 180);
+
+        if (style === 'breguet') {
+            // ② ブレゲ針（先端手前に中空リング）
+            const pRingCenter = polarToCartesian(cx, cy, len * 0.82, angle);
+            const ringR = isSun ? 14 : 11;
+            parentG.appendChild(createSVGElem("line", { x1: pTail.x, y1: pTail.y, x2: pTip.x, y2: pTip.y, stroke: color, "stroke-width": strokeW }));
+            parentG.appendChild(createSVGElem("circle", { cx: pRingCenter.x, cy: pRingCenter.y, r: ringR, fill: "#222222", stroke: color, "stroke-width": strokeW * 1.2 }));
+            parentG.appendChild(createSVGElem("circle", { cx: pRingCenter.x, cy: pRingCenter.y, r: ringR * 0.55, fill: "none", stroke: color, "stroke-width": strokeW }));
+            // 尾部リング
+            const pTailRing = polarToCartesian(cx, cy, tailLen * 0.6, angle + 180);
+            parentG.appendChild(createSVGElem("circle", { cx: pTailRing.x, cy: pTailRing.y, r: 5, fill: "none", stroke: color, "stroke-width": strokeW }));
+        } else if (style === 'dauphine') {
+            // ③ ドーフィン針（剣型ソリッド菱形）
+            const baseW = strokeW * 3.5;
+            const pBaseL = polarToCartesian(cx, cy, baseW, angle - 90);
+            const pBaseR = polarToCartesian(cx, cy, baseW, angle + 90);
+            const dSword = `M ${pTail.x} ${pTail.y} L ${pBaseL.x} ${pBaseL.y} L ${pTip.x} ${pTip.y} L ${pBaseR.x} ${pBaseR.y} Z`;
+            parentG.appendChild(createSVGElem("path", { d: dSword, fill: color, opacity: 0.85 }));
+            parentG.appendChild(createSVGElem("line", { x1: pTail.x, y1: pTail.y, x2: pTip.x, y2: pTip.y, stroke: "#ffffff", "stroke-width": 0.8, opacity: 0.5 }));
+        } else if (style === 'baton') {
+            // ④ バトン針（均一な幅のストレートモダン）
+            parentG.appendChild(createSVGElem("line", { x1: pTail.x, y1: pTail.y, x2: pTip.x, y2: pTip.y, stroke: color, "stroke-width": strokeW * 1.8, "stroke-linecap": "square" }));
+            const pTailBlock = polarToCartesian(cx, cy, tailLen * 0.5, angle + 180);
+            parentG.appendChild(createSVGElem("circle", { cx: pTailBlock.x, cy: pTailBlock.y, r: strokeW * 2, fill: color }));
+        } else if (style === 'cathedral') {
+            // ⑤ カテドラル針（ステンドグラス透かし彫り）
+            parentG.appendChild(createSVGElem("line", { x1: pTail.x, y1: pTail.y, x2: pTip.x, y2: pTip.y, stroke: color, "stroke-width": strokeW }));
+            const pDiamond = polarToCartesian(cx, cy, len * 0.78, angle);
+            const diaW = isSun ? 16 : 13;
+            const dFrame = `M ${polarToCartesian(cx, cy, len * 0.88, angle).x} ${polarToCartesian(cx, cy, len * 0.88, angle).y} ` +
+                           `L ${polarToCartesian(pDiamond.x, pDiamond.y, diaW, angle - 90).x} ${polarToCartesian(pDiamond.x, pDiamond.y, diaW, angle - 90).y} ` +
+                           `L ${polarToCartesian(cx, cy, len * 0.68, angle).x} ${polarToCartesian(cx, cy, len * 0.68, angle).y} ` +
+                           `L ${polarToCartesian(pDiamond.x, pDiamond.y, diaW, angle + 90).x} ${polarToCartesian(pDiamond.x, pDiamond.y, diaW, angle + 90).y} Z`;
+            parentG.appendChild(createSVGElem("path", { d: dFrame, fill: "#222222", stroke: color, "stroke-width": strokeW * 1.2 }));
+            parentG.appendChild(createSVGElem("line", { x1: polarToCartesian(cx, cy, len * 0.68, angle).x, y1: polarToCartesian(cx, cy, len * 0.68, angle).y, x2: polarToCartesian(cx, cy, len * 0.88, angle).x, y2: polarToCartesian(cx, cy, len * 0.88, angle).y, stroke: color, "stroke-width": strokeW }));
+            // 尾部クローバー
+            const pTailClover = polarToCartesian(cx, cy, tailLen * 0.6, angle + 180);
+            parentG.appendChild(createSVGElem("circle", { cx: pTailClover.x, cy: pTailClover.y, r: 5, fill: color }));
+        } else {
+            // ① クラシック・槍針 (標準デフォルト)
+            parentG.appendChild(createSVGElem("line", { x1: pTail.x, y1: pTail.y, x2: pTip.x, y2: pTip.y, stroke: color, "stroke-width": strokeW, "stroke-linecap": "round" }));
+            const pTailMid = polarToCartesian(cx, cy, tailLen * 0.6, angle + 180);
+            parentG.appendChild(createSVGElem("circle", { cx: pTailMid.x, cy: pTailMid.y, r: isSun ? 4 : 5, fill: isSun ? color : "none", stroke: color, "stroke-width": 1.5 }));
+        }
+
+        // --- 先端シンボル ---
+        if (isSun) {
+            // 太陽シンボル (☉)
+            const sunHeadG = createSVGElem("g", { transform: `translate(${pTip.x}, ${pTip.y})` });
+            sunHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 10, fill: "rgba(201, 116, 60, 0.25)", stroke: color, "stroke-width": 1.5 }));
+            sunHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 3, fill: color }));
+            for (let a = 0; a < 360; a += 45) {
+                const rad = a * Math.PI / 180;
+                sunHeadG.appendChild(createSVGElem("line", { x1: Math.cos(rad) * 11, y1: Math.sin(rad) * 11, x2: Math.cos(rad) * 15, y2: Math.sin(rad) * 15, stroke: color, "stroke-width": 1.2 }));
+            }
+            parentG.appendChild(sunHeadG);
+        } else {
+            // 月シンボル (☽)
+            const moonHeadG = createSVGElem("g", { transform: `translate(${pTip.x}, ${pTip.y}) rotate(${angle})` });
+            moonHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 12, fill: "rgba(212, 175, 55, 0.25)", stroke: color, "stroke-width": 1.5 }));
+            const moonPathD = "M -4 -7 A 8 8 0 0 1 4 7 A 6 6 0 0 0 -4 -7 Z";
+            moonHeadG.appendChild(createSVGElem("path", { d: moonPathD, fill: color }));
+            parentG.appendChild(moonHeadG);
+        }
+    };
+
     // --- 1. 太陽針 (短針) ---
     const sunG = createSVGElem("g", { class: "clock-hand-sun" });
-    const pSunTip = polarToCartesian(cx, cy, sunLen, sunAngle);
-    const pSunTail = polarToCartesian(cx, cy, 50, sunAngle + 180);
-
-    // 針の本体
-    sunG.appendChild(createSVGElem("line", {
-        x1: pSunTail.x, y1: pSunTail.y, x2: pSunTip.x, y2: pSunTip.y,
-        stroke: sunCol, "stroke-width": sunW, "stroke-linecap": "round"
-    }));
-
-    // 短針のカウンターウェイト（尾部ひし形）
-    const pSunTailMid = polarToCartesian(cx, cy, 35, sunAngle + 180);
-    sunG.appendChild(createSVGElem("circle", {
-        cx: pSunTailMid.x, cy: pSunTailMid.y, r: 4, fill: sunCol
-    }));
-
-    // 太陽シンボル (先端 ☉)
-    const sunHeadG = createSVGElem("g", { transform: `translate(${pSunTip.x}, ${pSunTip.y})` });
-    sunHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 10, fill: "rgba(201, 116, 60, 0.2)", stroke: sunCol, "stroke-width": 1.5 }));
-    sunHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 3, fill: sunCol }));
-    // 太陽光線（4本の小さなクロス）
-    for (let a = 0; a < 360; a += 45) {
-        const rad = a * Math.PI / 180;
-        const x1 = Math.cos(rad) * 11, y1 = Math.sin(rad) * 11;
-        const x2 = Math.cos(rad) * 15, y2 = Math.sin(rad) * 15;
-        sunHeadG.appendChild(createSVGElem("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: sunCol, "stroke-width": 1.2 }));
-    }
-    sunG.appendChild(sunHeadG);
+    renderHand(sunG, handStyle, sunLen, sunAngle, sunCol, sunW, true);
     g.appendChild(sunG);
 
     // --- 2. 月針 (長針) ---
     const moonG = createSVGElem("g", { class: "clock-hand-moon" });
-    const pMoonTip = polarToCartesian(cx, cy, moonLen, moonAngle);
-    const pMoonTail = polarToCartesian(cx, cy, 70, moonAngle + 180);
-
-    // 針の本体
-    moonG.appendChild(createSVGElem("line", {
-        x1: pMoonTail.x, y1: pMoonTail.y, x2: pMoonTip.x, y2: pMoonTip.y,
-        stroke: moonCol, "stroke-width": moonW, "stroke-linecap": "round"
-    }));
-
-    // 長針のカウンターウェイト（尾部三日月）
-    const pMoonTailMid = polarToCartesian(cx, cy, 45, moonAngle + 180);
-    moonG.appendChild(createSVGElem("circle", {
-        cx: pMoonTailMid.x, cy: pMoonTailMid.y, r: 5, fill: "none", stroke: moonCol, "stroke-width": 1.5
-    }));
-
-    // 月シンボル (先端 ☽)
-    const moonHeadG = createSVGElem("g", { transform: `translate(${pMoonTip.x}, ${pMoonTip.y}) rotate(${moonAngle})` });
-    moonHeadG.appendChild(createSVGElem("circle", { cx: 0, cy: 0, r: 12, fill: "rgba(212, 175, 55, 0.2)", stroke: moonCol, "stroke-width": 1.5 }));
-    
-    // 三日月のアウトライン
-    const moonPathD = "M -4 -7 A 8 8 0 0 1 4 7 A 6 6 0 0 0 -4 -7 Z";
-    moonHeadG.appendChild(createSVGElem("path", { d: moonPathD, fill: moonCol }));
-    moonG.appendChild(moonHeadG);
+    renderHand(moonG, handStyle, moonLen, moonAngle, moonCol, moonW, false);
     g.appendChild(moonG);
 
     // --- 3. 中心軸 (ピボット・金鋲) ---
@@ -604,6 +628,7 @@ function drawClockHands(cycleStartTime) {
     pivotG.onclick = (e) => {
         e.stopPropagation();
         window.inspectedDateMs = null;
+        if (typeof updateDayDisplay === 'function') updateDayDisplay();
         drawClockHands(cycleStartTime);
         if (statusBar) statusBar.innerText = "時計の針を現在日時にリセットしました";
     };

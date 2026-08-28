@@ -32,12 +32,13 @@ window.defaultLayerSettings = {
         bgRingOpacity: 0.03
     },
     clockHands: {
+        handStyle: "classic",
         moonHandColor: "#d4af37",
         moonHandWidth: 1.5,
         moonHandLength: 960,
         sunHandColor: "#c9743c",
         sunHandWidth: 2.2,
-        sunHandLength: 680,
+        sunHandLength: 850,
         centerPivotRadius: 12,
         centerPivotColor: "#8b8170",
         opacity: 0.95

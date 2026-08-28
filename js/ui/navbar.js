@@ -49,9 +49,19 @@ function initNavBar() {
                 </select>
             </div>
         </div>
-        <button id="prevBtn" style="background:transparent; border:1px solid #d4af37; color:#d4af37; padding:4px 8px; cursor:pointer; border-radius:4px;">◀</button>
-        <div id="cycleDisplay" title="クリックして年月を移動" style="font-weight:bold; font-size:14px; text-align:center; min-width:120px; cursor:pointer; padding:4px; border-radius:4px; transition:background 0.2s;">--</div>
-        <button id="nextBtn" style="background:#d4af37; border:none; color:#000; padding:4px 8px; cursor:pointer; border-radius:4px; font-weight:bold;">▶</button>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <button id="prevBtn" style="background:transparent; border:1px solid #d4af37; color:#d4af37; padding:2px 8px; cursor:pointer; border-radius:4px; font-size:12px;">◀</button>
+                <div id="cycleDisplay" title="クリックして年月を移動" style="font-weight:bold; font-size:13px; text-align:center; min-width:110px; cursor:pointer; padding:2px 4px; border-radius:4px; transition:background 0.2s;">--</div>
+                <button id="nextBtn" style="background:#d4af37; border:none; color:#000; padding:2px 8px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:12px;">▶</button>
+            </div>
+            <div id="day-controller" style="display:flex; align-items:center; gap:4px; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px; border:1px solid rgba(212,175,55,0.25);">
+                <button id="prevDayBtn" title="1日戻る" style="background:transparent; border:none; color:#d4af37; cursor:pointer; font-size:11px; padding:1px 4px;">◀</button>
+                <span id="dayDisplay" style="font-size:11px; font-weight:bold; color:#fff; min-width:90px; text-align:center;">--</span>
+                <button id="nextDayBtn" title="1日進む" style="background:transparent; border:none; color:#d4af37; cursor:pointer; font-size:11px; padding:1px 4px;">▶</button>
+                <button id="todayBtn" title="現在日時にリセット" style="background:rgba(212,175,55,0.2); border:1px solid #d4af37; color:#d4af37; font-size:10px; padding:1px 5px; border-radius:3px; cursor:pointer; font-weight:bold;">今日</button>
+            </div>
+        </div>
     `;
     document.body.appendChild(navDiv);
 
@@ -114,6 +124,51 @@ function initNavBar() {
         jumpDiv.style.display = 'none';
         if(typeof updateCalendarCycle === 'function') updateCalendarCycle();
     };
+
+    // --- 日付送りコントローラーのイベント ---
+    window.updateDayDisplay = function() {
+        const display = document.getElementById('dayDisplay');
+        if (!display) return;
+
+        const cycleStart = window.lastCycleStartTimeMs || 0;
+        const monthDays = window.currentMonthDays || 30;
+        const nowMs = Date.now();
+
+        if (window.inspectedDateMs) {
+            const d = new Date(window.inspectedDateMs);
+            display.innerHTML = `${d.getDate()}日 <span style="font-size:10px; color:#38bdf8;">(探索中)</span>`;
+        } else if (nowMs >= cycleStart && nowMs <= cycleStart + monthDays * MS_PER_DAY) {
+            const d = new Date(nowMs);
+            display.innerHTML = `${d.getDate()}日 <span style="font-size:10px; color:#4ade80;">(今日)</span>`;
+        } else {
+            display.innerHTML = `新月 <span style="font-size:10px; color:#8b949e;">(待機中)</span>`;
+        }
+    };
+
+    document.getElementById('prevDayBtn').onclick = () => {
+        const cycleStart = window.lastCycleStartTimeMs || Date.now();
+        const base = window.inspectedDateMs || (Date.now() >= cycleStart && Date.now() <= cycleStart + 30 * MS_PER_DAY ? Date.now() : cycleStart);
+        window.inspectedDateMs = base - MS_PER_DAY;
+        window.updateDayDisplay();
+        if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
+    };
+
+    document.getElementById('nextDayBtn').onclick = () => {
+        const cycleStart = window.lastCycleStartTimeMs || Date.now();
+        const base = window.inspectedDateMs || (Date.now() >= cycleStart && Date.now() <= cycleStart + 30 * MS_PER_DAY ? Date.now() : cycleStart);
+        window.inspectedDateMs = base + MS_PER_DAY;
+        window.updateDayDisplay();
+        if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
+    };
+
+    document.getElementById('todayBtn').onclick = () => {
+        window.inspectedDateMs = null;
+        window.updateDayDisplay();
+        if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
+        if (statusBar) statusBar.innerText = "時計の針を現在日時にリセットしました";
+    };
+
+    window.updateDayDisplay();
 
     const btnMinimize = document.getElementById('btn-minimize-panel');
     const panelContent = document.getElementById('layer-panel-content');

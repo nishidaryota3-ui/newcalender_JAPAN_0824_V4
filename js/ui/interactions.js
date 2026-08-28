@@ -167,7 +167,7 @@ function initInteractions() {
 
     if(typeof svg !== 'undefined' && svg) {
         svg.addEventListener('click', (e) => {
-            if (dragDistance > 5) return;
+            if (dragDistance > 5 || currentTool === 'pointer') return;
             const pt = svg.createSVGPoint();
             pt.x = e.clientX;
             pt.y = e.clientY;
@@ -181,18 +181,6 @@ function initInteractions() {
             const absSegment = Math.floor(angle / DEGREES_PER_SEGMENT);
             const ringInfo = typeof getRingInfo === 'function' ? getRingInfo(distance) : null;
             if (!ringInfo) return;
-
-            // ポインターツール時はクリックした日時へ時計の針を移動（探索モード）
-            if (currentTool === 'pointer') {
-                const relSegment = (absSegment - currentStartSegment + TOTAL_SEGMENTS) % TOTAL_SEGMENTS;
-                const day = Math.floor(relSegment / SEGMENTS_PER_DAY);
-                const timeSlot = relSegment % SEGMENTS_PER_DAY;
-                if (window.lastCycleStartTimeMs) {
-                    window.inspectedDateMs = window.lastCycleStartTimeMs + day * MS_PER_DAY + (timeSlot * 6 + 3) * MS_PER_HOUR;
-                    if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
-                }
-                return;
-            }
 
             const cellKey = `c${currentCycle}_abs${absSegment}_${ringInfo.layerId}`;
             

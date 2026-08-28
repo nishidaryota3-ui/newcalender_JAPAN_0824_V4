@@ -100,6 +100,16 @@ function initDesignPanel() {
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-zodiac-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-bg-opacity-val" style="width:30px; text-align:right;">0.03</span></label>
             </div>
             <div id="dp-group-clock-hands" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
+                <label style="display:flex; justify-content:space-between; align-items:center;">針のデザイン: 
+                    <select id="dp-clock-hand-style" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:150px; font-size:12px;">
+                        <option value="classic">クラシック・槍針</option>
+                        <option value="breguet">ブレゲ・月型針</option>
+                        <option value="dauphine">ドーフィン・剣針</option>
+                        <option value="baton">バトン・直線針</option>
+                        <option value="cathedral">カテドラル・教会針</option>
+                    </select>
+                </label>
+                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
                 <div style="font-size:11px; color:#d4af37; font-weight:bold;">🌙 月の針 (長針)</div>
                 <label style="display:flex; justify-content:space-between; align-items:center;">針の色: <input type="color" id="dp-clock-moon-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">針の太さ: <input type="range" id="dp-clock-moon-width" min="0.5" max="6" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-moon-width-val" style="width:30px; text-align:right;">1.5</span></label>
@@ -109,7 +119,7 @@ function initDesignPanel() {
                 <div style="font-size:11px; color:#c9743c; font-weight:bold;">☀️ 太陽の針 (短針)</div>
                 <label style="display:flex; justify-content:space-between; align-items:center;">針の色: <input type="color" id="dp-clock-sun-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">針の太さ: <input type="range" id="dp-clock-sun-width" min="0.5" max="6" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-width-val" style="width:30px; text-align:right;">2.2</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の長さ: <input type="range" id="dp-clock-sun-length" min="300" max="900" step="10" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-length-val" style="width:30px; text-align:right;">680</span></label>
+                <label style="display:flex; justify-content:space-between; align-items:center;">針の長さ: <input type="range" id="dp-clock-sun-length" min="300" max="1100" step="10" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-length-val" style="width:30px; text-align:right;">850</span></label>
                 
                 <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
                 <div style="font-size:11px; color:#8b8170; font-weight:bold;">⚙️ 中心軸 (ピボット鋲)</div>
@@ -230,7 +240,7 @@ function initDesignPanel() {
         }
     };
 
-    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-zodiac-display-type', 'dp-zodiac-font-size', 'dp-zodiac-color', 'dp-zodiac-divider-color', 'dp-zodiac-divider-width', 'dp-zodiac-radius-offset', 'dp-zodiac-bg-color', 'dp-zodiac-bg-opacity', 'dp-clock-moon-color', 'dp-clock-moon-width', 'dp-clock-moon-length', 'dp-clock-sun-color', 'dp-clock-sun-width', 'dp-clock-sun-length', 'dp-clock-pivot-radius', 'dp-clock-pivot-color', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
+    ['dp-lunar-phase', 'dp-font', 'dp-size', 'dp-color', 'dp-bold', 'dp-stroke-color', 'dp-stroke-width', 'dp-shape', 'dp-shape-scale', 'dp-lang', 'dp-density', 'dp-mansion-font-size', 'dp-color-east', 'dp-color-south', 'dp-color-west', 'dp-color-north', 'dp-mansion-mark-scale', 'dp-mansion-star-size', 'dp-mansion-divider-color', 'dp-mansion-divider-width', 'dp-mansion-radius-offset', 'dp-mansion-bg-color', 'dp-mansion-bg-opacity', 'dp-zodiac-display-type', 'dp-zodiac-font-size', 'dp-zodiac-color', 'dp-zodiac-divider-color', 'dp-zodiac-divider-width', 'dp-zodiac-radius-offset', 'dp-zodiac-bg-color', 'dp-zodiac-bg-opacity', 'dp-clock-hand-style', 'dp-clock-moon-color', 'dp-clock-moon-width', 'dp-clock-moon-length', 'dp-clock-sun-color', 'dp-clock-sun-width', 'dp-clock-sun-length', 'dp-clock-pivot-radius', 'dp-clock-pivot-color', 'dp-shape-fill-trans', 'dp-shape-fill', 'dp-shape-stroke-orig', 'dp-shape-stroke', 'dp-shape-stroke-width', 'dp-opacity', 'dp-offset', 'dp-radius-offset'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (id === 'dp-lunar-phase') el.addEventListener('change', loadPanelData);
@@ -395,6 +405,7 @@ function loadPanelData() {
 
     if (currentDesignTarget === 'clockHands') {
         document.getElementById('dp-group-clock-hands').style.display = 'flex';
+        document.getElementById('dp-clock-hand-style').value = st.handStyle || 'classic';
         document.getElementById('dp-clock-moon-color').value = st.moonHandColor || "#d4af37";
         const mW = st.moonHandWidth !== undefined ? st.moonHandWidth : 1.5;
         document.getElementById('dp-clock-moon-width').value = mW;
@@ -532,6 +543,7 @@ function updateDesign() {
     }
 
     if (currentDesignTarget === 'clockHands') {
+        st.handStyle = document.getElementById('dp-clock-hand-style').value;
         st.moonHandColor = document.getElementById('dp-clock-moon-color').value;
         st.moonHandWidth = parseFloat(document.getElementById('dp-clock-moon-width').value);
         document.getElementById('dp-clock-moon-width-val').innerText = st.moonHandWidth;

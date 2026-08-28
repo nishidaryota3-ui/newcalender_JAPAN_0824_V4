@@ -80,6 +80,7 @@ function updateCalendarCycle() {
     const targetYear = startDate.getFullYear();
     const cycleDisplay = document.getElementById('cycleDisplay');
     if (cycleDisplay) cycleDisplay.innerHTML = `${targetYear}年 ${startDate.getMonth() + 1}月 <span style="font-size:10px;">▼</span><br><span style="font-size:11px; color:#8b949e;">新月: ${startDate.getMonth() + 1}月${startDate.getDate()}日〜</span>`;
+    if (typeof window.updateDayDisplay === 'function') window.updateDayDisplay();
 
     if (window.lastCheckedTideYear !== targetYear) {
         safeExecute('checkAvailableTides', () => window.checkAvailableTides(targetYear));
