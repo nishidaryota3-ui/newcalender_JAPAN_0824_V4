@@ -293,7 +293,9 @@
     };
 
     function redrawCalendarAndDrawer() {
-        if (typeof drawUserEvents === 'function' && window.currentCycleDate) {
+        if (typeof updateCalendarCycle === 'function') {
+            updateCalendarCycle();
+        } else if (typeof drawUserEvents === 'function' && window.currentCycleDate) {
             drawUserEvents(window.currentCycleDate);
         }
         if (isDrawerOpen) {

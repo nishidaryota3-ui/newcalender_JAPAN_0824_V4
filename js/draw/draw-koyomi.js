@@ -304,10 +304,10 @@ function drawHaikus(startDate) {
 function drawUserEvents(startDate) {
     let layer = document.getElementById("layer-user-events");
     if (!layer) {
-        const svg = document.getElementById("calendar-svg") || document.querySelector("svg");
-        if (svg) {
+        const master = document.getElementById("master-group") || document.getElementById("calendar-svg") || document.querySelector("svg");
+        if (master) {
             layer = createSVGElem("g", { id: "layer-user-events" });
-            svg.appendChild(layer);
+            master.appendChild(layer);
         } else {
             return;
         }
@@ -327,6 +327,7 @@ function drawUserEvents(startDate) {
     const rLabel = (R[28] + R[29]) / 2 + (st.radiusOffset || 0);
 
     const categories = window.USER_EVENT_CATEGORIES || {};
+    const defs = document.getElementById("text-path-defs") || document.getElementById("textPathDefs");
 
     for (let i = 0; i < window.currentMonthDays; i++) {
         const loopDate = new Date(startDate.getTime() + i * MS_PER_DAY);
@@ -343,11 +344,11 @@ function drawUserEvents(startDate) {
 
         // 1. 薄い扇形カラー背景
         if (st.showSectorWash !== false) {
-            const pathD = describeArcSector(cx, cy, rIn, rOut, angStart, angEnd);
+            const pathD = getSectorPathD(rIn, rOut, angStart, angEnd);
             const wash = createSVGElem("path", {
                 d: pathD,
                 fill: cat.color,
-                opacity: (st.opacity * (st.sectorWashOpacity !== undefined ? st.sectorWashOpacity : 0.2)),
+                opacity: (st.opacity * (st.sectorWashOpacity !== undefined ? st.sectorWashOpacity : 0.22)),
                 style: "cursor: pointer; transition: opacity 0.2s;"
             });
             wash.onclick = () => window.openUserEventModal(dateStr, firstEv.id);
@@ -358,10 +359,10 @@ function drawUserEvents(startDate) {
         if (st.showDot !== false) {
             const ptDot = polarToCartesian(cx, cy, rIn + 6, (angStart + angEnd) / 2);
             const dot = createSVGElem("circle", {
-                cx: ptDot.x, cy: ptDot.y, r: 2.8,
+                cx: ptDot.x, cy: ptDot.y, r: 3.2,
                 fill: cat.color,
                 stroke: "#ffffff",
-                "stroke-width": 0.6,
+                "stroke-width": 0.8,
                 opacity: st.opacity,
                 style: "cursor: pointer;"
             });
@@ -370,44 +371,35 @@ function drawUserEvents(startDate) {
         }
 
         // 3. 弧状テキストラベル（専用テキストパス）
-        if (st.showLabel !== false) {
+        if (st.showLabel !== false && defs) {
             const arcId = `arc_userev_${currentCycle}_${i}`;
-            let defs = document.getElementById("textPathDefs");
-            if (!defs) {
-                const svg = document.getElementById("calendar-svg") || document.querySelector("svg");
-                if (svg) {
-                    defs = createSVGElem("defs", { id: "textPathDefs" });
-                    svg.insertBefore(defs, svg.firstChild);
-                }
-            }
-            if (defs) {
-                createTextArc(defs, arcId, rLabel, angStart, angEnd);
+            createTextArc(defs, arcId, rLabel, angStart, angEnd);
 
-                const textGroup = createSVGElem("g", { class: "user-event-text", style: "cursor: pointer;" });
-                textGroup.onclick = () => window.openUserEventModal(dateStr, firstEv.id);
+            const textGroup = createSVGElem("g", { class: "user-event-text", style: "cursor: pointer;" });
+            textGroup.onclick = () => window.openUserEventModal(dateStr, firstEv.id);
 
-                const titleElem = createSVGElem("title", {}, `${events.map(e => `[${(categories[e.category]||{}).name||'記録'}] ${e.text}`).join('\n')}`);
-                textGroup.appendChild(titleElem);
+            const titleElem = createSVGElem("title", {}, `${events.map(e => `[${(categories[e.category]||{}).name||'記録'}] ${e.text}`).join('\n')}`);
+            textGroup.appendChild(titleElem);
 
-                const labelText = events.length > 1 ? `${firstEv.text} (${events.length})` : firstEv.text;
-                const textElem = createSVGElem("text", {
-                    fill: cat.labelColor || cat.color,
-                    "font-size": `${st.fontSize || 12}px`,
-                    "font-family": st.fontFamily || "'Shippori Mincho', serif",
-                    "font-weight": "500",
-                    opacity: st.opacity
-                });
+            const labelText = events.length > 1 ? `${firstEv.text} (${events.length})` : firstEv.text;
+            const textElem = createSVGElem("text", {
+                fill: cat.labelColor || cat.color,
+                "font-size": `${st.fontSize || 12}px`,
+                "font-family": st.fontFamily || "'Shippori Mincho', serif",
+                "font-weight": "600",
+                opacity: st.opacity,
+                dy: "1.5"
+            });
 
-                const textPath = createSVGElem("textPath", {
-                    href: `#${arcId}`,
-                    startOffset: "50%",
-                    "text-anchor": "middle"
-                }, labelText);
+            const textPath = createSVGElem("textPath", {
+                href: `#${arcId}`,
+                startOffset: "50%",
+                "text-anchor": "middle"
+            }, labelText);
 
-                textElem.appendChild(textPath);
-                textGroup.appendChild(textElem);
-                layer.appendChild(textGroup);
-            }
+            textElem.appendChild(textPath);
+            textGroup.appendChild(textElem);
+            layer.appendChild(textGroup);
         }
     }
 }
