@@ -128,6 +128,15 @@ function initNavBar() {
         if(typeof updateCalendarCycle === 'function') updateCalendarCycle();
     };
 
+    const obsBtn = document.getElementById('btn-toggle-observations');
+    if (obsBtn) {
+        obsBtn.onclick = () => {
+            if (typeof window.toggleObservationDrawer === 'function') {
+                window.toggleObservationDrawer();
+            }
+        };
+    }
+
     // --- 日付送りコントローラーのイベント ---
     window.updateDayDisplay = function() {
         const display = document.getElementById('dayDisplay');

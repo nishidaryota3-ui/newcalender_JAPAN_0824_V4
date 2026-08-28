@@ -73,6 +73,9 @@ function updateCalendarCycle() {
     }
 
     const cycleStartTimeMs = startDate.getTime();
+    window.currentCycleDate = startDate;
+    window.lastCycleStartTimeMs = cycleStartTimeMs;
+    
     currentStartSegment = Math.round(((cycleStartTimeMs - baseDate.getTime()) / MS_PER_DAY % CYCLE_DAYS) * SEGMENTS_PER_DAY) % TOTAL_SEGMENTS;
     if (currentStartSegment < 0) currentStartSegment += TOTAL_SEGMENTS;
     globalRotation = -currentStartSegment * DEGREES_PER_SEGMENT;

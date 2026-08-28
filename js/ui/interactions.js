@@ -192,33 +192,42 @@ function initInteractions() {
             localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(calendarData));
             if(typeof renderSavedData === 'function') renderSavedData();
         });
-
-        // 日付セグメントのダブルクリックで観察記録・日記モーダルを起動（案A）
-        svg.addEventListener('dblclick', (e) => {
-            const pt = svg.createSVGPoint();
-            pt.x = e.clientX;
-            pt.y = e.clientY;
-            if(typeof masterGroup === 'undefined' || !masterGroup) return;
-            const ptM = pt.matrixTransform(masterGroup.getScreenCTM().inverse());
-            const dx = ptM.x - cx, dy = ptM.y - cy;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // カレンダー円盤内のクリックか判定
-            if (distance < 50 || distance > (concentricRings[concentricRings.length - 1] + 150)) return;
-
-            let angle = Math.atan2(dy, dx) * RAD_TO_DEG;
-            angle = (angle + 90 + 360) % 360;
-            const absSegment = Math.floor(angle / DEGREES_PER_SEGMENT);
-            const relSegment = (absSegment - currentStartSegment + TOTAL_SEGMENTS) % TOTAL_SEGMENTS;
-            const dayIndex = Math.floor(relSegment / SEGMENTS_PER_DAY);
-
-            if (dayIndex >= 0 && dayIndex < (window.currentMonthDays || 30) && window.currentCycleDate) {
-                const targetDate = new Date(window.currentCycleDate.getTime() + dayIndex * MS_PER_DAY);
-                const dateStr = formatDateStr(targetDate);
-                if (typeof window.openUserEventModal === 'function') {
-                    window.openUserEventModal(dateStr);
-                }
-            }
-        });
     }
+
+    // 日付セグメントのダブルクリックで観察記録・日記モーダルを起動（案A）
+    function handleWheelDblClick(e) {
+        if (typeof svg === 'undefined' || !svg || typeof masterGroup === 'undefined' || !masterGroup) return;
+        
+        // パネルやUI上でのダブルクリックは除外
+        if (e.target.closest('#nav-bar') || e.target.closest('#layer-panel') || e.target.closest('#palette-container') || e.target.closest('#user-event-modal') || e.target.closest('#user-event-drawer')) {
+            return;
+        }
+
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const ptM = pt.matrixTransform(masterGroup.getScreenCTM().inverse());
+        const dx = ptM.x - cx, dy = ptM.y - cy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // カレンダー円盤領域内のダブルクリックか判定（中心ピボット〜最外周）
+        if (distance < 50 || distance > 1300) return;
+
+        let angle = Math.atan2(dy, dx) * RAD_TO_DEG;
+        angle = (angle + 90 + 360) % 360;
+        const absSegment = Math.floor(angle / DEGREES_PER_SEGMENT);
+        const relSegment = (absSegment - currentStartSegment + TOTAL_SEGMENTS) % TOTAL_SEGMENTS;
+        const dayIndex = Math.floor(relSegment / SEGMENTS_PER_DAY);
+
+        const cycleStart = window.lastCycleStartTimeMs || (window.currentCycleDate ? window.currentCycleDate.getTime() : null);
+        if (cycleStart !== null && dayIndex >= 0 && dayIndex < (window.currentMonthDays || 30)) {
+            const targetDate = new Date(cycleStart + dayIndex * MS_PER_DAY);
+            const dateStr = formatDateStr(targetDate);
+            if (typeof window.openUserEventModal === 'function') {
+                window.openUserEventModal(dateStr);
+            }
+        }
+    }
+
+    window.addEventListener('dblclick', handleWheelDblClick);
 }
