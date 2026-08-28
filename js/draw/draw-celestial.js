@@ -516,11 +516,12 @@ function drawClockHands(cycleStartTime) {
     const timeOffsetMs = targetTimeMs - cycleStartTime;
     const hoursIntoMonth = Math.max(0, Math.min(monthDays * 24, timeOffsetMs / MS_PER_HOUR));
     
-    // 月針の角度（30日の時間軸上の位置）
+    // 月針の角度（30日の時間軸・天球上を1ヶ月で360度一周する）
     const moonAngle = currentStartSegment * DEGREES_PER_SEGMENT + hoursIntoMonth * DEGREES_PER_HOUR;
     
-    // 太陽針の角度（太陽の季節・黄道移動）
-    const sunAngle = currentStartSegment * DEGREES_PER_SEGMENT + (hoursIntoMonth / 24) * 0.986 * (360 / 30);
+    // 太陽針の角度（天球文字盤上を1年で360度一周する：1日約0.9856度進む）
+    // ※新月(0日目)に月と太陽が重なり、満月(15日目・今日)には中心を挟んでほぼ一直線(180度)に向き合います
+    const sunAngle = currentStartSegment * DEGREES_PER_SEGMENT + (hoursIntoMonth / 24) * 0.9856;
 
     const g = createSVGElem("g", { class: "clock-hands-group", opacity: st.opacity });
 
