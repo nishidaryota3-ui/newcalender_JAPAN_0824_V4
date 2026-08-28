@@ -62,7 +62,9 @@ function initNavBar() {
                 <button id="todayBtn" title="現在日時にリセット" style="background:rgba(212,175,55,0.2); border:1px solid #d4af37; color:#d4af37; font-size:10px; padding:1px 5px; border-radius:3px; cursor:pointer; font-weight:bold;">今日</button>
             </div>
         </div>
-        <a href="slinky.html" style="background:rgba(212,175,55,0.15); border:1px solid #d4af37; color:#d4af37; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:4px; margin-left:5px; transition:0.2s;" title="3D立体螺旋（スリンキー）ビューを開く">🌀 3Dスリンキー</a>
+        <button id="btn-toggle-observations" style="background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.4); color:#d4af37; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:4px; margin-left:4px; transition:all 0.2s;" title="今月の観察記録・日記一覧を開く">
+            <span>観察記録</span>
+        </button>
     `;
     document.body.appendChild(navDiv);
 

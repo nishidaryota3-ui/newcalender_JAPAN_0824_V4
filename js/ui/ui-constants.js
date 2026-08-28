@@ -4,7 +4,7 @@ const TEXT_TARGETS = [
     'gregorian', 'weekday', 'sekki', 'kou', 'zassetsu', 'holiday', 'important', 
     'wafuText', 'gregorianText', 'dailyRainText', 'guideTime', 'guideTideText', 
     'guideRainText', 'lunarMansion', 'eventShinto', 'eventBuddhism', 'eventChurch', 
-    'eventSonota', 'lunar', 'haikuText'
+    'eventSonota', 'lunar', 'haikuText', 'userEvents'
 ];
 
 const SHAPE_TARGETS = [
@@ -45,6 +45,7 @@ const TARGET_NAMES = {
     eventBuddhism: "仏事", 
     eventChurch: "教会行事", 
     eventSonota: "その他", 
+    userEvents: "観察記録・日記",
     haikuText: "俳句 (一番外周)",
     moonRisePin: "月の出 (ピン)", 
     moonSetPin: "月の入 (ピン)", 
@@ -59,6 +60,7 @@ const LAYER_VISIBILITY_MAP = {
     "toggle-astro-pins": "#layer-astronomical-pins",
     "toggle-layer-lunar": "#layer-lunar-mansion", 
     "toggle-layer-zodiac": "#layer-zodiac-ring", 
+    "toggle-user-events": "#layer-user-events",
     "toggle-tide-graph": "#layer-tide-wave", 
     "toggle-rain-graph": "#layer-rain-graph",
     "toggle-daily-rain-bg": "#layer-daily-rain-bg", 

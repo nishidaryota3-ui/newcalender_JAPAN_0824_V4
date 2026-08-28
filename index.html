@@ -15,11 +15,6 @@
     </style>
 </head>
 <body>
-    <!-- 3Dスリンキーへのダイレクトリンクボタン（最前面・高視認性） -->
-    <a href="slinky.html" style="position:fixed; top:20px; left:260px; z-index:9999; background:linear-gradient(135deg, #d4af37, #f59e0b); color:#0f172a; text-decoration:none; padding:10px 18px; border-radius:30px; font-size:13px; font-weight:bold; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(212,175,55,0.4); border:1px solid rgba(255,255,255,0.6); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <span>🌀 3Dスリンキー (立体螺旋) を開く ➔</span>
-    </a>
-
     <div class="calendar-container" id="container"></div>
 
     <div id="layer-panel">
@@ -102,6 +97,10 @@
             <div class="layer-item layer-indent"><input type="checkbox" id="toggle-event-church" checked><label for="toggle-event-church">教会行事</label><button class="layer-settings-btn" data-target="eventChurch" title="デザイン設定">⚙️</button></div>
             <div class="layer-item layer-indent"><input type="checkbox" id="toggle-event-sonota" checked><label for="toggle-event-sonota">その他</label><button class="layer-settings-btn" data-target="eventSonota" title="デザイン設定">⚙️</button></div>
 
+            <!-- 私的観察記録・日記 -->
+            <div class="layer-group-title">▼ 観察記録・日記 (私的フェノロジー)</div>
+            <div class="layer-item layer-indent"><input type="checkbox" id="toggle-user-events" checked><label for="toggle-user-events">観察記録・日記</label><button class="layer-settings-btn" data-target="userEvents" title="デザイン設定">⚙️</button></div>
+
             <div style="margin-top:20px; text-align:center;">
                 <button id="reset-all-settings" style="background:rgba(255,100,100,0.1); border:1px solid rgba(255,100,100,0.5); color:#ff8888; border-radius:4px; padding:6px 12px; font-size:12px; cursor:pointer; width:100%; transition:0.2s;">⚠️ 全デザイン設定を初期化</button>
             </div>
@@ -125,9 +124,13 @@
     <script src="js/draw/draw-meteo.js"></script>
     <script src="js/draw/draw-koyomi.js"></script>
 
+    <!-- ユーザー記録データ -->
+    <script src="js/data/user-events.js"></script>
+
     <!-- UI・操作系 -->
     <script src="js/ui/ui-constants.js"></script>
     <script src="js/ui/haiku-modal.js"></script>
+    <script src="js/ui/user-events-modal.js"></script>
     <script src="js/ui/export-service.js"></script>
     <script src="js/ui/navbar.js"></script>
     <script src="js/ui/design-panel.js"></script>
