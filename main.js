@@ -73,9 +73,8 @@ function updateCalendarCycle() {
     }
 
     const cycleStartTimeMs = startDate.getTime();
-    window.currentCycleDate = startDate;
     window.lastCycleStartTimeMs = cycleStartTimeMs;
-    
+
     currentStartSegment = Math.round(((cycleStartTimeMs - baseDate.getTime()) / MS_PER_DAY % CYCLE_DAYS) * SEGMENTS_PER_DAY) % TOTAL_SEGMENTS;
     if (currentStartSegment < 0) currentStartSegment += TOTAL_SEGMENTS;
     globalRotation = -currentStartSegment * DEGREES_PER_SEGMENT;
@@ -100,7 +99,6 @@ function updateCalendarCycle() {
     safeExecute('renderSavedData', () => renderSavedData());
     safeExecute('drawTimeLabels', () => drawTimeLabels());
     safeExecute('drawKoyomiEvents', () => drawKoyomiEvents(startDate));
-    safeExecute('drawUserEvents', () => drawUserEvents(startDate));
     safeExecute('drawHaikus', () => drawHaikus(startDate));
     safeExecute('drawClockHands', () => drawClockHands(cycleStartTimeMs));
 
@@ -190,7 +188,7 @@ async function initApp() {
         defs.setAttribute("id", "text-path-defs");
         masterGroup.appendChild(defs);
         
-        const layerIds = ["layer-shadow", "layer-astronomical-pins", "layer-lines", "layer-data", "layer-tide-wave", "layer-rain-graph", "layer-daily-rain-bg", "layer-lunar-mansion", "layer-zodiac-ring", "layer-solar-dates", "layer-outer-season", "layer-guide-tide", "layer-guide-rain", "layer-daily-rain-text", "layer-guide-time", "layer-wafu-text", "layer-user-events", "layer-haiku", "layer-moon-rise", "layer-moon-set", "layer-sun-rise", "layer-sun-set", "layer-clock-hands"];
+        const layerIds = ["layer-shadow", "layer-astronomical-pins", "layer-lines", "layer-data", "layer-tide-wave", "layer-rain-graph", "layer-daily-rain-bg", "layer-lunar-mansion", "layer-zodiac-ring", "layer-solar-dates", "layer-outer-season", "layer-guide-tide", "layer-guide-rain", "layer-daily-rain-text", "layer-guide-time", "layer-wafu-text", "layer-haiku", "layer-moon-rise", "layer-moon-set", "layer-sun-rise", "layer-sun-set", "layer-clock-hands"];
         layerIds.forEach(id => {
             const g = document.createElementNS(svgNS, "g");
             g.setAttribute("id", id);

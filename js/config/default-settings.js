@@ -79,16 +79,6 @@ window.defaultLayerSettings = {
             fullMoon:     { shape: "none", fill: "#2c3e50", bgFill: "transparent", shapeStroke: "#555555", shapeStrokeWidth: 0, scale: 1 },
             lastQuarter:  { shape: "none", fill: "#2c3e50", bgFill: "transparent", shapeStroke: "#555555", shapeStrokeWidth: 0, scale: 1 }
         }
-    },
-    userEvents: {
-        fontFamily: "'Shippori Mincho', 'YuMincho', serif",
-        fontSize: 12,
-        opacity: 0.95,
-        sectorWashOpacity: 0.2,
-        showDot: true,
-        showLabel: true,
-        showSectorWash: true,
-        radiusOffset: 0
     }
 };
 
