@@ -262,14 +262,11 @@ function drawHaikus(startDate) {
     if (!st || st.opacity === 0) return;
 
     const stMansion = getLayerStyle('lunarMansion');
-    const stZodiac = getLayerStyle('zodiacRing');
     const mansionMarkScale = stMansion.markScale !== undefined ? stMansion.markScale : 4.0;
     const mansionBandWidth = 14 + 11 + (18 + mansionMarkScale * 2) + 8 * mansionMarkScale + 16;
     const rMaxMansion = concentricRings[concentricRings.length - 1] + 60 + (stMansion.radiusOffset || 0) + mansionBandWidth;
-    const zodiacBandWidth = Math.max(32, (stZodiac.fontSize || 22) + 14);
-    const rMaxZodiac = rMaxMansion + 6 + (stZodiac.radiusOffset || 0) + zodiacBandWidth;
 
-    const rBase = rMaxZodiac + 18 + (st.offsetRadius || 0);
+    const rBase = rMaxMansion + 18 + (st.offsetRadius || 0);
     
     for (let i = 0; i < window.currentMonthDays; i++) {
         const dateStr = formatDateStr(new Date(startDate.getTime() + i * MS_PER_DAY));

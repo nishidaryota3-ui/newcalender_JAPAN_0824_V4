@@ -150,7 +150,6 @@ function initNavBar() {
         const base = window.inspectedDateMs || (Date.now() >= cycleStart && Date.now() <= cycleStart + 30 * MS_PER_DAY ? Date.now() : cycleStart);
         window.inspectedDateMs = base - MS_PER_DAY;
         window.updateDayDisplay();
-        if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
     };
 
     document.getElementById('nextDayBtn').onclick = () => {
@@ -158,14 +157,12 @@ function initNavBar() {
         const base = window.inspectedDateMs || (Date.now() >= cycleStart && Date.now() <= cycleStart + 30 * MS_PER_DAY ? Date.now() : cycleStart);
         window.inspectedDateMs = base + MS_PER_DAY;
         window.updateDayDisplay();
-        if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
     };
 
     document.getElementById('todayBtn').onclick = () => {
         window.inspectedDateMs = null;
         window.updateDayDisplay();
-        if (typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
-        if (statusBar) statusBar.innerText = "時計の針を現在日時にリセットしました";
+        if (statusBar) statusBar.innerText = "探索日を現在日時にリセットしました";
     };
 
     window.updateDayDisplay();

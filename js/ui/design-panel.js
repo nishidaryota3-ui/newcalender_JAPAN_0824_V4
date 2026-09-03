@@ -82,50 +82,6 @@ function initDesignPanel() {
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-mansion-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
                 <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-mansion-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-mansion-bg-opacity-val" style="width:30px; text-align:right;">0.05</span></label>
             </div>
-            <div id="dp-group-zodiac" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
-                <label style="display:flex; justify-content:space-between; align-items:center;">表示形式: 
-                    <select id="dp-zodiac-display-type" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:140px;">
-                        <option value="symbol">記号 (♈︎ ♉︎ ♊︎...)</option>
-                        <option value="jp">日本語 (牡羊座...)</option>
-                        <option value="en">英語 (Aries...)</option>
-                    </select>
-                </label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">文字サイズ: <input type="number" id="dp-zodiac-font-size" style="width:60px; background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px;" min="8" max="60" step="1" value="22"></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">文字色: <input type="color" id="dp-zodiac-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
-                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
-                <label style="display:flex; justify-content:space-between; align-items:center;">仕切り線の色: <input type="color" id="dp-zodiac-divider-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">仕切り線の太さ: <input type="range" id="dp-zodiac-divider-width" min="0" max="5" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-divider-width-val" style="width:30px; text-align:right;">1</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">配置位置 (半径ズラし): <input type="range" id="dp-zodiac-radius-offset" min="-200" max="200" step="1" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-radius-offset-val" style="width:30px; text-align:right;">0</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の色: <input type="color" id="dp-zodiac-bg-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">背景帯の透明度: <input type="range" id="dp-zodiac-bg-opacity" min="0" max="1" step="0.05" style="width:100px; accent-color:#d4af37;"> <span id="dp-zodiac-bg-opacity-val" style="width:30px; text-align:right;">0.03</span></label>
-            </div>
-            <div id="dp-group-clock-hands" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
-                <label style="display:flex; justify-content:space-between; align-items:center;">針のデザイン: 
-                    <select id="dp-clock-hand-style" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:150px; font-size:12px;">
-                        <option value="classic">クラシック・槍針</option>
-                        <option value="breguet">ブレゲ・月型針</option>
-                        <option value="dauphine">ドーフィン・剣針</option>
-                        <option value="baton">バトン・直線針</option>
-                        <option value="cathedral">カテドラル・教会針</option>
-                    </select>
-                </label>
-                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
-                <div style="font-size:11px; color:#d4af37; font-weight:bold;">🌙 月の針 (長針)</div>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の色: <input type="color" id="dp-clock-moon-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の太さ: <input type="range" id="dp-clock-moon-width" min="0.5" max="6" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-moon-width-val" style="width:30px; text-align:right;">1.5</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の長さ: <input type="range" id="dp-clock-moon-length" min="400" max="1100" step="10" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-moon-length-val" style="width:30px; text-align:right;">960</span></label>
-                
-                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
-                <div style="font-size:11px; color:#c9743c; font-weight:bold;">☀️ 太陽の針 (短針)</div>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の色: <input type="color" id="dp-clock-sun-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の太さ: <input type="range" id="dp-clock-sun-width" min="0.5" max="6" step="0.2" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-width-val" style="width:30px; text-align:right;">2.2</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">針の長さ: <input type="range" id="dp-clock-sun-length" min="300" max="1100" step="10" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-sun-length-val" style="width:30px; text-align:right;">850</span></label>
-                
-                <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:0;">
-                <div style="font-size:11px; color:#8b8170; font-weight:bold;">⚙️ 中心軸 (ピボット鋲)</div>
-                <label style="display:flex; justify-content:space-between; align-items:center;">鋲の大きさ: <input type="range" id="dp-clock-pivot-radius" min="4" max="25" step="1" style="width:100px; accent-color:#d4af37;"> <span id="dp-clock-pivot-radius-val" style="width:30px; text-align:right;">12</span></label>
-                <label style="display:flex; justify-content:space-between; align-items:center;">鋲の色: <input type="color" id="dp-clock-pivot-color" style="background:none; border:none; width:30px; height:30px; cursor:pointer;"></label>
-            </div>
             <div id="dp-group-shape" style="display:none; flex-direction:column; gap:12px; margin-top:5px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.2);">
                 <label id="dp-row-shape-type" style="display:flex; justify-content:space-between; align-items:center;">図形の形: 
                     <select id="dp-shape" style="background:#222; color:#fff; border:1px solid #555; padding:4px; border-radius:4px; width:120px;">
@@ -385,49 +341,6 @@ function loadPanelData() {
         document.getElementById('dp-mansion-bg-opacity-val').innerText = bgOp;
     }
 
-    if (currentDesignTarget === 'zodiacRing') {
-        document.getElementById('dp-group-zodiac').style.display = 'flex';
-        document.getElementById('dp-zodiac-display-type').value = st.displayType || 'symbol';
-        document.getElementById('dp-zodiac-font-size').value = st.fontSize !== undefined ? st.fontSize : 22;
-        document.getElementById('dp-zodiac-color').value = st.color || "#8a8171";
-        document.getElementById('dp-zodiac-divider-color').value = st.dividerColor || "#8b8170";
-        const divW = st.dividerWidth !== undefined ? st.dividerWidth : 1.0;
-        document.getElementById('dp-zodiac-divider-width').value = divW;
-        document.getElementById('dp-zodiac-divider-width-val').innerText = divW;
-        const rOffset = st.radiusOffset !== undefined ? st.radiusOffset : 0;
-        document.getElementById('dp-zodiac-radius-offset').value = rOffset;
-        document.getElementById('dp-zodiac-radius-offset-val').innerText = rOffset;
-        document.getElementById('dp-zodiac-bg-color').value = st.bgRingColor || "#ffffff";
-        const bgOp = st.bgRingOpacity !== undefined ? st.bgRingOpacity : 0.03;
-        document.getElementById('dp-zodiac-bg-opacity').value = bgOp;
-        document.getElementById('dp-zodiac-bg-opacity-val').innerText = bgOp;
-    }
-
-    if (currentDesignTarget === 'clockHands') {
-        document.getElementById('dp-group-clock-hands').style.display = 'flex';
-        document.getElementById('dp-clock-hand-style').value = st.handStyle || 'classic';
-        document.getElementById('dp-clock-moon-color').value = st.moonHandColor || "#d4af37";
-        const mW = st.moonHandWidth !== undefined ? st.moonHandWidth : 1.5;
-        document.getElementById('dp-clock-moon-width').value = mW;
-        document.getElementById('dp-clock-moon-width-val').innerText = mW;
-        const mL = st.moonHandLength !== undefined ? st.moonHandLength : 960;
-        document.getElementById('dp-clock-moon-length').value = mL;
-        document.getElementById('dp-clock-moon-length-val').innerText = mL;
-
-        document.getElementById('dp-clock-sun-color').value = st.sunHandColor || "#c9743c";
-        const sW = st.sunHandWidth !== undefined ? st.sunHandWidth : 2.2;
-        document.getElementById('dp-clock-sun-width').value = sW;
-        document.getElementById('dp-clock-sun-width-val').innerText = sW;
-        const sL = st.sunHandLength !== undefined ? st.sunHandLength : 680;
-        document.getElementById('dp-clock-sun-length').value = sL;
-        document.getElementById('dp-clock-sun-length-val').innerText = sL;
-
-        const pR = st.centerPivotRadius !== undefined ? st.centerPivotRadius : 12;
-        document.getElementById('dp-clock-pivot-radius').value = pR;
-        document.getElementById('dp-clock-pivot-radius-val').innerText = pR;
-        document.getElementById('dp-clock-pivot-color').value = st.centerPivotColor || "#8b8170";
-    }
-
     if (currentDesignTarget === 'canvasBg') {
         document.getElementById('dp-group-shape').style.display = 'flex';
         document.getElementById('dp-row-shape-fill').style.display = 'flex';
@@ -528,39 +441,6 @@ function updateDesign() {
         document.getElementById('dp-mansion-bg-opacity-val').innerText = st.bgRingOpacity;
     }
 
-    if (currentDesignTarget === 'zodiacRing') {
-        st.displayType = document.getElementById('dp-zodiac-display-type').value;
-        st.fontSize = parseFloat(document.getElementById('dp-zodiac-font-size').value) || 22;
-        st.color = document.getElementById('dp-zodiac-color').value;
-        st.dividerColor = document.getElementById('dp-zodiac-divider-color').value;
-        st.dividerWidth = parseFloat(document.getElementById('dp-zodiac-divider-width').value);
-        document.getElementById('dp-zodiac-divider-width-val').innerText = st.dividerWidth;
-        st.radiusOffset = parseFloat(document.getElementById('dp-zodiac-radius-offset').value);
-        document.getElementById('dp-zodiac-radius-offset-val').innerText = st.radiusOffset;
-        st.bgRingColor = document.getElementById('dp-zodiac-bg-color').value;
-        st.bgRingOpacity = parseFloat(document.getElementById('dp-zodiac-bg-opacity').value);
-        document.getElementById('dp-zodiac-bg-opacity-val').innerText = st.bgRingOpacity;
-    }
-
-    if (currentDesignTarget === 'clockHands') {
-        st.handStyle = document.getElementById('dp-clock-hand-style').value;
-        st.moonHandColor = document.getElementById('dp-clock-moon-color').value;
-        st.moonHandWidth = parseFloat(document.getElementById('dp-clock-moon-width').value);
-        document.getElementById('dp-clock-moon-width-val').innerText = st.moonHandWidth;
-        st.moonHandLength = parseFloat(document.getElementById('dp-clock-moon-length').value);
-        document.getElementById('dp-clock-moon-length-val').innerText = st.moonHandLength;
-
-        st.sunHandColor = document.getElementById('dp-clock-sun-color').value;
-        st.sunHandWidth = parseFloat(document.getElementById('dp-clock-sun-width').value);
-        document.getElementById('dp-clock-sun-width-val').innerText = st.sunHandWidth;
-        st.sunHandLength = parseFloat(document.getElementById('dp-clock-sun-length').value);
-        document.getElementById('dp-clock-sun-length-val').innerText = st.sunHandLength;
-
-        st.centerPivotRadius = parseFloat(document.getElementById('dp-clock-pivot-radius').value);
-        document.getElementById('dp-clock-pivot-radius-val').innerText = st.centerPivotRadius;
-        st.centerPivotColor = document.getElementById('dp-clock-pivot-color').value;
-    }
-
     if (currentDesignTarget === 'canvasBg') {
         st.fill = document.getElementById('dp-shape-fill').value;
         document.body.style.backgroundColor = st.fill;
@@ -659,15 +539,13 @@ function triggerRedraw(target) {
         if (['rainGraph', 'guideRainLine', 'guideRainText'].includes(target) && typeof drawRainfallGraph === 'function') drawRainfallGraph(window.lastCycleStartTimeMs);
         if (target === 'lunarShadow' && typeof drawLunarShadow === 'function') drawLunarShadow(window.lastCycleStartTimeMs);
         if (target === 'astroPins' && typeof drawAstronomicalPins === 'function') drawAstronomicalPins(window.lastCycleStartTimeMs);
-        if (['lunarMansion', 'zodiacRing'].includes(target) && typeof drawLunarMansions === 'function') drawLunarMansions(window.lastCycleStartTimeMs);
-        if (['lunarMansion', 'zodiacRing'].includes(target) && typeof drawZodiacRing === 'function') drawZodiacRing(window.lastCycleStartTimeMs);
-        if (target === 'clockHands' && typeof drawClockHands === 'function') drawClockHands(window.lastCycleStartTimeMs);
-        if (['moonRisePin', 'moonSetPin'].includes(target) && typeof drawMoonEventPins === 'function') drawMoonEventPins(window.lastCycleStartTimeMs); 
+        if (target === 'lunarMansion' && typeof drawLunarMansions === 'function') drawLunarMansions(window.lastCycleStartTimeMs);
+        if (['moonRisePin', 'moonSetPin'].includes(target) && typeof drawMoonEventPins === 'function') drawMoonEventPins(window.lastCycleStartTimeMs);
     }
 
     if (window.lastKoyomiStartDate) {
         if (['dailyRainBg', 'dailyRainText'].includes(target) && typeof drawDailyRainStats === 'function') drawDailyRainStats(window.lastKoyomiStartDate);
-        if (['lunarMansion', 'zodiacRing', 'haikuText'].includes(target) && typeof drawHaikus === 'function') drawHaikus(window.lastKoyomiStartDate);
+        if (['lunarMansion', 'haikuText'].includes(target) && typeof drawHaikus === 'function') drawHaikus(window.lastKoyomiStartDate);
         if (['gregorian', 'weekday', 'sekki', 'kou', 'zassetsu', 'holiday', 'important', 'eventShinto', 'eventBuddhism', 'eventChurch', 'eventSonota', 'lunar', 'wafuText', 'gregorianText'].includes(target) && typeof drawKoyomiEvents === 'function') drawKoyomiEvents(window.lastKoyomiStartDate);
         if (['sunRisePin', 'sunSetPin'].includes(target) && typeof drawSunEventPins === 'function') drawSunEventPins(window.lastKoyomiStartDate); 
     }
